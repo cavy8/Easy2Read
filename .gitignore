@@ -1,0 +1,101 @@
+# Build directories
+build/
+build-vs/
+out/
+cmake-build-*/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+*.stamp
+*.check_cache
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+*.dll
+*.pdb
+*.lib
+*.exp
+*.ilk
+*.obj
+*.o
+*.a
+*.so
+*.dylib
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+build_output.txt
+cmake_output.txt
+cmake_configure_debug.txt
+build_error.txt
+
+# vcpkg
+vcpkg_installed/
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Compiled Object files
+*.slo
+*.lo
+*.ko
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so.*
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+
+# Package manager
+node_modules/
+packages/
+
+# User-specific files (keep INI template but ignore user modifications)
+# Uncomment the line below if you want to ignore user-modified INI files:
+# Data/SKSE/Plugins/Easy2Read.ini

@@ -1,0 +1,37 @@
+-- Running vcpkg install
+Detecting compiler hash for triplet x64-windows...
+Compiler found: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe
+Detecting compiler hash for triplet x64-windows-static...
+Compiler found: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe
+The following packages are already installed:
+    commonlibsse-ng:x64-windows-static@3.5.3 -- git+https://gitlab.com/colorglass/vcpkg-colorglass@83af9875a25a7d883de5492a40b418035f583e03
+  * fmt:x64-windows-static@11.0.2#1 -- git+https://github.com/microsoft/vcpkg@07a73a7565e5de9eb42e90c16c133bdfdfebbcda
+    imgui:x64-windows-static@1.91.0 -- git+https://github.com/microsoft/vcpkg@09b0e91307c74efecc2b8860b3a25f4e11aa96d3
+  * rapidcsv:x64-windows-static@8.83 -- git+https://github.com/microsoft/vcpkg@478468828d67563a15d2f68d5999a28064538e46
+    simpleini:x64-windows-static@4.22 -- git+https://github.com/microsoft/vcpkg@77db691cc40955e27044abc634287d9d1e17cffe
+  * spdlog:x64-windows-static@1.14.1 -- git+https://github.com/microsoft/vcpkg@545d0306db761411e23623ae6f44fc196cb571f7
+  * vcpkg-cmake:x64-windows@2024-04-23 -- git+https://github.com/microsoft/vcpkg@e74aa1e8f93278a8e71372f1fa08c3df420eb840
+  * vcpkg-cmake-config:x64-windows@2024-05-23 -- git+https://github.com/microsoft/vcpkg@97a63e4bc1a17422ffe4eff71da53b4b561a7841
+  * xbyak:x64-windows-static@7.6 -- git+https://github.com/microsoft/vcpkg@97a240607626e0b650d49102c0b7a0045433185f
+commonlibsse-ng provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(CommonLibSSE CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE CommonLibSSE::CommonLibSSE)
+
+imgui provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(imgui CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE imgui::imgui)
+
+simpleini is header-only and can be used from CMake via:
+
+  find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
+  target_include_directories(main PRIVATE ${SIMPLEINI_INCLUDE_DIRS})
+
+All requested installations completed successfully in: 803 us
+-- Running vcpkg install - done
+CMake Error: CMake was unable to find a build program corresponding to "Ninja".  CMAKE_MAKE_PROGRAM is not set.  You probably need to select a different build tool.
+CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+-- Configuring incomplete, errors occurred!

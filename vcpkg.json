@@ -1,0 +1,12 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+    "name": "easy2read",
+    "version-string": "1.0.0",
+    "description": "Easy2Read - Alternative text display for Skyrim books",
+    "license": "MIT",
+    "dependencies": [
+        "commonlibsse-ng",
+        "imgui",
+        "simpleini"
+    ]
+}

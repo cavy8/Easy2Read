@@ -1,4 +1,5 @@
 #include "Config/Settings.h"
+#include "Hooks/MenuWatcher.h"
 #include "PCH.h"
 
 
@@ -35,7 +36,7 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
   switch (a_msg->type) {
   case SKSE::MessagingInterface::kDataLoaded:
     logger::info("Data loaded - registering event handlers");
-    // TODO: Register MenuWatcher here
+    Easy2Read::MenuWatcher::GetSingleton()->Register();
     // TODO: Register InputHandler here
     break;
   case SKSE::MessagingInterface::kPostLoad:

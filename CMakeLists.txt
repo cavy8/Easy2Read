@@ -28,11 +28,13 @@ find_package(imgui CONFIG REQUIRED)
 set(SOURCES
     src/main.cpp
     src/Config/Settings.cpp
+    src/Hooks/MenuWatcher.cpp
 )
 
 set(HEADERS
     src/PCH.h
     src/Config/Settings.h
+    src/Hooks/MenuWatcher.h
 )
 
 # ---- Create DLL ----

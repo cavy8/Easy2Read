@@ -16,8 +16,7 @@ public:
   void Render();
 
   // Set content to display
-  void SetContent(const std::string &title, const std::string &text,
-                  bool isNote);
+  void SetContent(const std::string &title, const std::string &text);
   void ClearContent();
 
   // Visibility control
@@ -46,7 +45,6 @@ private:
 
   std::string bookTitle;
   std::string bookText;
-  bool isNote = false;
 
   // Accumulated scroll input from InputHandler
   float pendingScrollDelta = 0.0f;

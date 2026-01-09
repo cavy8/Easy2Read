@@ -149,14 +149,11 @@ void Overlay::RenderWindow() {
                       settings->titleColorB / 255.0f, 1.0f);
 
     // Draw title with scaled font
-    std::string displayTitle = isNote ? "Note: " : "Book: ";
-    displayTitle += bookTitle;
-
     ImGui::PushStyleColor(ImGuiCol_Text, titleColor);
     float originalScale = ImGui::GetFont()->Scale;
     ImGui::GetFont()->Scale *= settings->titleScale;
     ImGui::PushFont(ImGui::GetFont());
-    ImGui::TextWrapped("%s", displayTitle.c_str());
+    ImGui::TextWrapped("%s", bookTitle.c_str());
     ImGui::PopFont();
     ImGui::GetFont()->Scale = originalScale;
     ImGui::PopStyleColor();
@@ -202,18 +199,15 @@ void Overlay::RenderWindow() {
   ImGui::PopStyleColor(9); // All colors pushed above
 }
 
-void Overlay::SetContent(const std::string &title, const std::string &text,
-                         bool note) {
+void Overlay::SetContent(const std::string &title, const std::string &text) {
   bookTitle = title;
   bookText = text;
-  isNote = note;
   SKSE::log::debug("Overlay content set: {}", title);
 }
 
 void Overlay::ClearContent() {
   bookTitle.clear();
   bookText.clear();
-  isNote = false;
 }
 
 void Overlay::Show() {

@@ -90,8 +90,7 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
           if (book) {
             std::string title = BookUtils::GetBookTitle(book);
             std::string text = BookUtils::GetBookText(book);
-            bool isNote = BookUtils::IsNote(book);
-            overlay->SetContent(title, text, isNote);
+            overlay->SetContent(title, text);
           }
           overlay->Show();
         }

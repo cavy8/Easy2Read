@@ -76,9 +76,9 @@ The built DLL will be in `build-vs/Release/Easy2Read.dll`.
 ## Known Limitations
 
 1. **VR Not Supported**: This implementation targets SE/AE only
-2. **No Scaleform Integration**: Overlay is rendered via ImGui, separate from Skyrim's UI
-3. **Multi-page Books**: All text is shown concatenated; original page breaks are not preserved
-4. **Dynamic Text**: Books with script-generated text may show base text
+2. **Multi-page Books**: All text is shown concatenated; original page breaks are not preserved
+3. **Dynamic Text**: Books with script-generated text may show base text
+4. **Input Capturing**: Scroll wheel input is still passed onto the underlying book menu.
 
 ## License
 

@@ -3,7 +3,6 @@
 #include "PCH.h"
 #include <imgui.h>
 
-
 namespace Easy2Read {
 
 Overlay *Overlay::GetSingleton() {
@@ -64,10 +63,14 @@ void Overlay::Render() {
 void Overlay::RenderWindow() {
   auto settings = Settings::GetSingleton();
 
-  // Get display size for centering
+  // Get display size for percentage-based sizing
   ImGuiIO &io = ImGui::GetIO();
-  float windowWidth = settings->windowWidth;
-  float windowHeight = settings->windowHeight;
+
+  // Calculate window size as percentage of screen
+  float windowWidth =
+      io.DisplaySize.x * (settings->windowWidthPercent / 100.0f);
+  float windowHeight =
+      io.DisplaySize.y * (settings->windowHeightPercent / 100.0f);
 
   // Center the window
   ImVec2 windowPos((io.DisplaySize.x - windowWidth) / 2.0f,
@@ -90,7 +93,7 @@ void Overlay::RenderWindow() {
   ImGui::PushStyleColor(ImGuiCol_TitleBg, titleBgColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, titleBgColor);
 
-  // Window flags - remove all interactivity
+  // Window flags - remove all interactivity except scrolling
   ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse |
                            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                            ImGuiWindowFlags_NoTitleBar;

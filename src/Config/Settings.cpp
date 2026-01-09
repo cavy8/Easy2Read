@@ -46,7 +46,7 @@ void Settings::LoadTheme() {
   SKSE::log::info("Loading theme from Easy2Read_Theme.ini");
 
   // [Font]
-  const char *fontPresetStr = ini.GetValue("Font", "FontPreset", "Default");
+  const char *fontPresetStr = ini.GetValue("Font", "FontPreset", "Sovngarde");
   fontPreset = ParseFontPreset(fontPresetStr);
   customFontFile = ini.GetValue("Font", "CustomFontFile",
                                 "SKSE/Plugins/Easy2Read/CustomFont.ttf");
@@ -74,38 +74,45 @@ void Settings::LoadTheme() {
   windowColorB =
       static_cast<std::uint8_t>(ini.GetLongValue("Colors", "WindowColorB", 25));
 
-  // [Window]
-  windowWidth =
-      static_cast<float>(ini.GetDoubleValue("Window", "Width", 800.0));
-  windowHeight =
-      static_cast<float>(ini.GetDoubleValue("Window", "Height", 600.0));
+  // [Window] - now percentage-based
+  windowWidthPercent =
+      static_cast<float>(ini.GetDoubleValue("Window", "WidthPercent", 50.0));
+  windowHeightPercent =
+      static_cast<float>(ini.GetDoubleValue("Window", "HeightPercent", 70.0));
   windowOpacity =
       static_cast<float>(ini.GetLongValue("Window", "Opacity", 90)) / 100.0f;
 
   SKSE::log::info("  FontPreset: {}, FontSize: {}", fontPresetStr, fontSize);
-  SKSE::log::info("  WindowSize: {}x{}, Opacity: {:.0f}%", windowWidth,
-                  windowHeight, windowOpacity * 100);
+  SKSE::log::info("  WindowSize: {}%x{}%, Opacity: {:.0f}%", windowWidthPercent,
+                  windowHeightPercent, windowOpacity * 100);
 }
 
 std::string Settings::GetFontPath() const {
   switch (fontPreset) {
+  case FontPreset::Sovngarde:
+    return "Data/SKSE/Plugins/Easy2Read/Sovngarde-Bold.ttf";
   case FontPreset::Dyslexic:
     return "Data/SKSE/Plugins/Easy2Read/OpenDyslexic-Regular.otf";
   case FontPreset::Custom:
     return "Data/" + customFontFile;
-  case FontPreset::Default:
+  case FontPreset::ImGuiDefault:
   default:
     return ""; // Empty means use ImGui default font
   }
 }
 
 FontPreset Settings::ParseFontPreset(const std::string &str) {
-  if (str == "dyslexic" || str == "Dyslexic" || str == "DYSLEXIC") {
+  if (str == "sovngarde" || str == "Sovngarde" || str == "SOVNGARDE") {
+    return FontPreset::Sovngarde;
+  } else if (str == "dyslexic" || str == "Dyslexic" || str == "DYSLEXIC") {
     return FontPreset::Dyslexic;
   } else if (str == "custom" || str == "Custom" || str == "CUSTOM") {
     return FontPreset::Custom;
+  } else if (str == "imgui" || str == "ImGui" || str == "IMGUI" ||
+             str == "default" || str == "Default" || str == "DEFAULT") {
+    return FontPreset::ImGuiDefault;
   }
-  return FontPreset::Default;
+  return FontPreset::Sovngarde; // Default to Sovngarde
 }
 
 } // namespace Easy2Read

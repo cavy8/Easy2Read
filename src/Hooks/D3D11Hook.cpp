@@ -2,7 +2,9 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 #include "PCH.h"
+#include "UI/Overlay.h"
 #include <imgui.h>
+
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
@@ -145,6 +147,10 @@ bool D3D11Hook::InitImGui(IDXGISwapChain *swapChain) {
 
   imguiInitialized = true;
   SKSE::log::info("ImGui initialized successfully");
+
+  // Initialize the overlay (loads fonts)
+  Easy2Read::Overlay::GetSingleton()->Initialize();
+
   return true;
 }
 

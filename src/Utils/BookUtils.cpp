@@ -143,6 +143,17 @@ std::string BookUtils::NormalizeWhitespace(const std::string &text) {
     }
   }
 
+  // Trim leading whitespace
+  size_t start = 0;
+  while (start < result.size() &&
+         (result[start] == ' ' || result[start] == '\n' ||
+          result[start] == '\r' || result[start] == '\t')) {
+    start++;
+  }
+  if (start > 0) {
+    result = result.substr(start);
+  }
+
   // Trim trailing whitespace
   while (!result.empty() && (result.back() == ' ' || result.back() == '\n')) {
     result.pop_back();

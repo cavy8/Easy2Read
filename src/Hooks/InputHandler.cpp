@@ -2,6 +2,8 @@
 #include "Config/Settings.h"
 #include "MenuWatcher.h"
 #include "PCH.h"
+#include "UI/Overlay.h"
+#include "Utils/BookUtils.h"
 
 
 namespace Easy2Read {
@@ -36,12 +38,13 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
     return RE::BSEventNotifyControl::kContinue;
   }
 
-  // Only process input when BookMenu is open
+  auto overlay = Overlay::GetSingleton();
   auto menuWatcher = MenuWatcher::GetSingleton();
+
+  // If BookMenu closed, hide overlay
   if (!menuWatcher->IsBookMenuOpen()) {
-    // If overlay is visible but menu closed, hide it
-    if (overlayVisible.load()) {
-      HideOverlay();
+    if (overlay->IsVisible()) {
+      overlay->Hide();
     }
     return RE::BSEventNotifyControl::kContinue;
   }
@@ -49,26 +52,35 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
   auto settings = Settings::GetSingleton();
 
   for (auto event = *a_event; event; event = event->next) {
-    // Only handle button events
     if (event->eventType != RE::INPUT_EVENT_TYPE::kButton) {
       continue;
     }
 
     auto buttonEvent = static_cast<RE::ButtonEvent *>(event);
 
-    // Only respond to key down (not held or released)
     if (!buttonEvent->IsDown()) {
       continue;
     }
 
-    // Check if this is our configured hotkey
     std::uint32_t keyCode = buttonEvent->GetIDCode();
 
-    // Handle keyboard input
     if (buttonEvent->device == RE::INPUT_DEVICE::kKeyboard) {
       if (keyCode == settings->toggleKey) {
         SKSE::log::info("Toggle hotkey pressed (key {})", keyCode);
-        ToggleOverlay();
+
+        if (overlay->IsVisible()) {
+          overlay->Hide();
+        } else {
+          // Set content and show overlay
+          auto book = menuWatcher->GetCurrentBook();
+          if (book) {
+            std::string title = BookUtils::GetBookTitle(book);
+            std::string text = BookUtils::GetBookText(book);
+            bool isNote = BookUtils::IsNote(book);
+            overlay->SetContent(title, text, isNote);
+          }
+          overlay->Show();
+        }
       }
     }
   }
@@ -76,26 +88,10 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
   return RE::BSEventNotifyControl::kContinue;
 }
 
-void InputHandler::ToggleOverlay() {
-  if (overlayVisible.load()) {
-    HideOverlay();
-  } else {
-    ShowOverlay();
-  }
-}
+void InputHandler::ToggleOverlay() { Overlay::GetSingleton()->Toggle(); }
 
-void InputHandler::ShowOverlay() {
-  if (!overlayVisible.load()) {
-    overlayVisible.store(true);
-    SKSE::log::info("Overlay shown");
-  }
-}
+void InputHandler::ShowOverlay() { Overlay::GetSingleton()->Show(); }
 
-void InputHandler::HideOverlay() {
-  if (overlayVisible.load()) {
-    overlayVisible.store(false);
-    SKSE::log::info("Overlay hidden");
-  }
-}
+void InputHandler::HideOverlay() { Overlay::GetSingleton()->Hide(); }
 
 } // namespace Easy2Read

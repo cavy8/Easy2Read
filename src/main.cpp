@@ -1,7 +1,10 @@
 #include "Config/Settings.h"
+#include "Hooks/D3D11Hook.h"
 #include "Hooks/InputHandler.h"
 #include "Hooks/MenuWatcher.h"
 #include "PCH.h"
+#include "UI/Overlay.h"
+
 
 namespace {
 /**
@@ -38,6 +41,12 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
     logger::info("Data loaded - registering event handlers");
     Easy2Read::MenuWatcher::GetSingleton()->Register();
     Easy2Read::InputHandler::GetSingleton()->Register();
+
+    // Install D3D11 hook and set up overlay render callback
+    if (Easy2Read::D3D11Hook::GetSingleton()->Install()) {
+      Easy2Read::D3D11Hook::GetSingleton()->SetRenderCallback(
+          []() { Easy2Read::Overlay::GetSingleton()->Render(); });
+    }
     break;
   case SKSE::MessagingInterface::kPostLoad:
     logger::info("Post load complete");

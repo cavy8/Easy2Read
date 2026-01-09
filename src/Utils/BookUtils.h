@@ -25,6 +25,9 @@ public:
 private:
   // Internal helper to clean up whitespace
   static std::string NormalizeWhitespace(const std::string &text);
+
+  // Strip [pagebreak] markers
+  static std::string StripPagebreaks(const std::string &text);
 };
 
 } // namespace Easy2Read

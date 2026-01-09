@@ -30,7 +30,11 @@ set(SOURCES
     src/Config/Settings.cpp
     src/Hooks/MenuWatcher.cpp
     src/Hooks/InputHandler.cpp
+    src/Hooks/D3D11Hook.cpp
     src/Utils/BookUtils.cpp
+    src/UI/Overlay.cpp
+    src/ImGui/imgui_impl_dx11.cpp
+    src/ImGui/imgui_impl_win32.cpp
 )
 
 set(HEADERS
@@ -38,7 +42,11 @@ set(HEADERS
     src/Config/Settings.h
     src/Hooks/MenuWatcher.h
     src/Hooks/InputHandler.h
+    src/Hooks/D3D11Hook.h
     src/Utils/BookUtils.h
+    src/UI/Overlay.h
+    src/ImGui/imgui_impl_dx11.h
+    src/ImGui/imgui_impl_win32.h
 )
 
 # ---- Create DLL ----
@@ -71,6 +79,8 @@ target_precompile_headers(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         imgui::imgui
+        d3d11
+        dxgi
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC CommonLibSSE::CommonLibSSE)

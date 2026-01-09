@@ -1,7 +1,6 @@
 #include "BookUtils.h"
 #include "PCH.h"
 
-
 namespace Easy2Read {
 
 std::string BookUtils::GetBookTitle(RE::TESObjectBOOK *book) {
@@ -25,6 +24,7 @@ std::string BookUtils::GetBookText(RE::TESObjectBOOK *book) {
 
   // Strip markup and normalize whitespace
   std::string cleanText = StripMarkup(rawText);
+  cleanText = StripPagebreaks(cleanText);
   return NormalizeWhitespace(cleanText);
 }
 
@@ -146,6 +146,28 @@ std::string BookUtils::NormalizeWhitespace(const std::string &text) {
   // Trim trailing whitespace
   while (!result.empty() && (result.back() == ' ' || result.back() == '\n')) {
     result.pop_back();
+  }
+
+  return result;
+}
+
+std::string BookUtils::StripPagebreaks(const std::string &text) {
+  std::string result = text;
+
+  // Remove [pagebreak] markers (case insensitive)
+  const std::string pagebreakLower = "[pagebreak]";
+  const std::string pagebreakUpper = "[PAGEBREAK]";
+  const std::string pagebreakMixed = "[Pagebreak]";
+
+  size_t pos;
+  while ((pos = result.find(pagebreakLower)) != std::string::npos) {
+    result.erase(pos, pagebreakLower.length());
+  }
+  while ((pos = result.find(pagebreakUpper)) != std::string::npos) {
+    result.erase(pos, pagebreakUpper.length());
+  }
+  while ((pos = result.find(pagebreakMixed)) != std::string::npos) {
+    result.erase(pos, pagebreakMixed.length());
   }
 
   return result;

@@ -6,7 +6,7 @@
 namespace Easy2Read {
 
 enum class FontPreset {
-  Default,  // Roboto - clean, readable
+  Default,  // ImGui default font
   Dyslexic, // OpenDyslexic - accessibility font
   Custom    // User-specified font file
 };
@@ -16,6 +16,7 @@ public:
   [[nodiscard]] static Settings *GetSingleton();
 
   void Load();
+  void LoadTheme();
 
   // Get the resolved font file path based on current preset
   [[nodiscard]] std::string GetFontPath() const;
@@ -29,17 +30,25 @@ public:
   // ---- Font ----
   FontPreset fontPreset = FontPreset::Default;
   std::string customFontFile;
-  float fontSize = 18.0f;
+  float fontSize = 24.0f;
 
   // ---- Window ----
-  float windowWidth = 600.0f;
-  float windowHeight = 400.0f;
-  float backgroundAlpha = 0.95f;
-  bool closeOnClickOutside = false;
+  float windowWidth = 800.0f;
+  float windowHeight = 600.0f;
+  float windowOpacity = 0.90f; // 0-1
 
-  // Colors (RGBA)
-  std::uint32_t textColor = 0xE0E0E0FF;
-  std::uint32_t backgroundColor = 0x1A1A1AFF;
+  // ---- Colors (RGB, 0-255) ----
+  std::uint8_t titleColorR = 255;
+  std::uint8_t titleColorG = 220;
+  std::uint8_t titleColorB = 150;
+
+  std::uint8_t bodyColorR = 255;
+  std::uint8_t bodyColorG = 255;
+  std::uint8_t bodyColorB = 255;
+
+  std::uint8_t windowColorR = 20;
+  std::uint8_t windowColorG = 20;
+  std::uint8_t windowColorB = 25;
 
 private:
   Settings() = default;

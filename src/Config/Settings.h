@@ -31,25 +31,64 @@ public:
   // ---- Font ----
   FontPreset fontPreset = FontPreset::Sovngarde;
   std::string customFontFile;
-  float fontSize = 24.0f;
+  float fontSize = 24.0f;      // Body text size
+  float titleFontSize = 28.0f; // Title text size (0 = same as body)
+  float titleScale =
+      1.2f; // Scale multiplier for title (alternative to titleFontSize)
 
   // ---- Window (percentage of screen size, 0-100) ----
   float windowWidthPercent = 50.0f;  // 50% of screen width
   float windowHeightPercent = 70.0f; // 70% of screen height
   float windowOpacity = 0.90f;       // 0-1
+  float windowRounding = 8.0f;       // Corner rounding in pixels
+  float windowPadding = 12.0f;       // Padding inside window
 
   // ---- Colors (RGB, 0-255) ----
+  // Title text
   std::uint8_t titleColorR = 255;
   std::uint8_t titleColorG = 220;
   std::uint8_t titleColorB = 150;
 
+  // Body text
   std::uint8_t bodyColorR = 255;
   std::uint8_t bodyColorG = 255;
   std::uint8_t bodyColorB = 255;
 
+  // Window background
   std::uint8_t windowColorR = 20;
   std::uint8_t windowColorG = 20;
   std::uint8_t windowColorB = 25;
+
+  // Window border
+  std::uint8_t borderColorR = 80;
+  std::uint8_t borderColorG = 80;
+  std::uint8_t borderColorB = 90;
+  float borderSize = 1.0f;
+
+  // Separator line
+  std::uint8_t separatorColorR = 100;
+  std::uint8_t separatorColorG = 100;
+  std::uint8_t separatorColorB = 110;
+
+  // Scrollbar background
+  std::uint8_t scrollbarBgColorR = 30;
+  std::uint8_t scrollbarBgColorG = 30;
+  std::uint8_t scrollbarBgColorB = 35;
+
+  // Scrollbar thumb (handle)
+  std::uint8_t scrollbarColorR = 80;
+  std::uint8_t scrollbarColorG = 80;
+  std::uint8_t scrollbarColorB = 90;
+
+  // Scrollbar thumb hover
+  std::uint8_t scrollbarHoverColorR = 120;
+  std::uint8_t scrollbarHoverColorG = 120;
+  std::uint8_t scrollbarHoverColorB = 130;
+
+  // Scrollbar settings
+  float scrollbarSize = 14.0f;    // Width of scrollbar
+  float scrollbarRounding = 4.0f; // Rounding of scrollbar corners
+  float scrollSpeed = 50.0f;      // Pixels per scroll wheel tick
 
 private:
   Settings() = default;

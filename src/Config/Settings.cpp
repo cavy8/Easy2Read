@@ -1,7 +1,6 @@
 #include "Settings.h"
 #include "PCH.h"
 
-
 namespace Easy2Read {
 
 Settings *Settings::GetSingleton() {
@@ -51,8 +50,10 @@ void Settings::LoadTheme() {
   customFontFile = ini.GetValue("Font", "CustomFontFile",
                                 "SKSE/Plugins/Easy2Read/CustomFont.ttf");
   fontSize = static_cast<float>(ini.GetDoubleValue("Font", "FontSize", 24.0));
+  titleScale =
+      static_cast<float>(ini.GetDoubleValue("Font", "TitleScale", 1.2));
 
-  // [Colors]
+  // [Colors] - Title
   titleColorR =
       static_cast<std::uint8_t>(ini.GetLongValue("Colors", "TitleColorR", 255));
   titleColorG =
@@ -60,6 +61,7 @@ void Settings::LoadTheme() {
   titleColorB =
       static_cast<std::uint8_t>(ini.GetLongValue("Colors", "TitleColorB", 150));
 
+  // [Colors] - Body
   bodyColorR =
       static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BodyColorR", 255));
   bodyColorG =
@@ -67,6 +69,7 @@ void Settings::LoadTheme() {
   bodyColorB =
       static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BodyColorB", 255));
 
+  // [Colors] - Window
   windowColorR =
       static_cast<std::uint8_t>(ini.GetLongValue("Colors", "WindowColorR", 20));
   windowColorG =
@@ -74,15 +77,70 @@ void Settings::LoadTheme() {
   windowColorB =
       static_cast<std::uint8_t>(ini.GetLongValue("Colors", "WindowColorB", 25));
 
-  // [Window] - now percentage-based
+  // [Colors] - Border
+  borderColorR =
+      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BorderColorR", 80));
+  borderColorG =
+      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BorderColorG", 80));
+  borderColorB =
+      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BorderColorB", 90));
+  borderSize =
+      static_cast<float>(ini.GetDoubleValue("Colors", "BorderSize", 1.0));
+
+  // [Colors] - Separator
+  separatorColorR = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "SeparatorColorR", 100));
+  separatorColorG = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "SeparatorColorG", 100));
+  separatorColorB = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "SeparatorColorB", 110));
+
+  // [Scrollbar] - Background
+  scrollbarBgColorR = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "BackgroundColorR", 30));
+  scrollbarBgColorG = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "BackgroundColorG", 30));
+  scrollbarBgColorB = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "BackgroundColorB", 35));
+
+  // [Scrollbar] - Thumb
+  scrollbarColorR = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "ThumbColorR", 80));
+  scrollbarColorG = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "ThumbColorG", 80));
+  scrollbarColorB = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "ThumbColorB", 90));
+
+  // [Scrollbar] - Thumb Hover
+  scrollbarHoverColorR = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "ThumbHoverColorR", 120));
+  scrollbarHoverColorG = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "ThumbHoverColorG", 120));
+  scrollbarHoverColorB = static_cast<std::uint8_t>(
+      ini.GetLongValue("Scrollbar", "ThumbHoverColorB", 130));
+
+  // [Scrollbar] - Size/Speed
+  scrollbarSize =
+      static_cast<float>(ini.GetDoubleValue("Scrollbar", "Size", 14.0));
+  scrollbarRounding =
+      static_cast<float>(ini.GetDoubleValue("Scrollbar", "Rounding", 4.0));
+  scrollSpeed =
+      static_cast<float>(ini.GetDoubleValue("Scrollbar", "ScrollSpeed", 50.0));
+
+  // [Window]
   windowWidthPercent =
       static_cast<float>(ini.GetDoubleValue("Window", "WidthPercent", 50.0));
   windowHeightPercent =
       static_cast<float>(ini.GetDoubleValue("Window", "HeightPercent", 70.0));
   windowOpacity =
       static_cast<float>(ini.GetLongValue("Window", "Opacity", 90)) / 100.0f;
+  windowRounding =
+      static_cast<float>(ini.GetDoubleValue("Window", "Rounding", 8.0));
+  windowPadding =
+      static_cast<float>(ini.GetDoubleValue("Window", "Padding", 12.0));
 
-  SKSE::log::info("  FontPreset: {}, FontSize: {}", fontPresetStr, fontSize);
+  SKSE::log::info("  FontPreset: {}, FontSize: {}, TitleScale: {}",
+                  fontPresetStr, fontSize, titleScale);
   SKSE::log::info("  WindowSize: {}%x{}%, Opacity: {:.0f}%", windowWidthPercent,
                   windowHeightPercent, windowOpacity * 100);
 }

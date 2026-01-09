@@ -80,8 +80,10 @@ void Overlay::RenderWindow() {
   ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
   ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Always);
 
-  // Configure window colors from theme
+  // Configure all style settings from theme
   float opacity = settings->windowOpacity;
+
+  // Window colors
   ImVec4 bgColor(settings->windowColorR / 255.0f,
                  settings->windowColorG / 255.0f,
                  settings->windowColorB / 255.0f, opacity);
@@ -89,9 +91,46 @@ void Overlay::RenderWindow() {
                       settings->windowColorG / 255.0f * 0.8f,
                       settings->windowColorB / 255.0f * 0.8f, opacity);
 
+  // Border color
+  ImVec4 borderColor(settings->borderColorR / 255.0f,
+                     settings->borderColorG / 255.0f,
+                     settings->borderColorB / 255.0f, opacity);
+
+  // Separator color
+  ImVec4 separatorColor(settings->separatorColorR / 255.0f,
+                        settings->separatorColorG / 255.0f,
+                        settings->separatorColorB / 255.0f, 1.0f);
+
+  // Scrollbar colors
+  ImVec4 scrollbarBgColor(settings->scrollbarBgColorR / 255.0f,
+                          settings->scrollbarBgColorG / 255.0f,
+                          settings->scrollbarBgColorB / 255.0f, 1.0f);
+  ImVec4 scrollbarColor(settings->scrollbarColorR / 255.0f,
+                        settings->scrollbarColorG / 255.0f,
+                        settings->scrollbarColorB / 255.0f, 1.0f);
+  ImVec4 scrollbarHoverColor(settings->scrollbarHoverColorR / 255.0f,
+                             settings->scrollbarHoverColorG / 255.0f,
+                             settings->scrollbarHoverColorB / 255.0f, 1.0f);
+
+  // Push all colors
   ImGui::PushStyleColor(ImGuiCol_WindowBg, bgColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, titleBgColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, titleBgColor);
+  ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+  ImGui::PushStyleColor(ImGuiCol_Separator, separatorColor);
+  ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, scrollbarBgColor);
+  ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, scrollbarColor);
+  ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, scrollbarHoverColor);
+  ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, scrollbarHoverColor);
+
+  // Push style vars (sizes, rounding, etc.)
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->windowRounding);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
+                      ImVec2(settings->windowPadding, settings->windowPadding));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, settings->borderSize);
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, settings->scrollbarSize);
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding,
+                      settings->scrollbarRounding);
 
   // Window flags - remove all interactivity except scrolling
   ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse |
@@ -104,17 +143,22 @@ void Overlay::RenderWindow() {
   }
 
   if (ImGui::Begin("###Easy2ReadOverlay", nullptr, flags)) {
-    // Title with custom color
+    // Title with custom color and scale
     ImVec4 titleColor(settings->titleColorR / 255.0f,
                       settings->titleColorG / 255.0f,
                       settings->titleColorB / 255.0f, 1.0f);
 
-    // Draw title
-    std::string displayTitle = isNote ? "📜 " : "📖 ";
+    // Draw title with scaled font
+    std::string displayTitle = isNote ? "Note: " : "Book: ";
     displayTitle += bookTitle;
 
     ImGui::PushStyleColor(ImGuiCol_Text, titleColor);
+    float originalScale = ImGui::GetFont()->Scale;
+    ImGui::GetFont()->Scale *= settings->titleScale;
+    ImGui::PushFont(ImGui::GetFont());
     ImGui::TextWrapped("%s", displayTitle.c_str());
+    ImGui::PopFont();
+    ImGui::GetFont()->Scale = originalScale;
     ImGui::PopStyleColor();
 
     // Separator under title
@@ -133,9 +177,9 @@ void Overlay::RenderWindow() {
 
     // Apply any pending scroll input directly (bypasses mouse position check)
     if (pendingScrollDelta != 0.0f) {
-      float scrollSpeed = 50.0f; // pixels per scroll unit
       float currentScroll = ImGui::GetScrollY();
-      float newScroll = currentScroll - (pendingScrollDelta * scrollSpeed);
+      float newScroll =
+          currentScroll - (pendingScrollDelta * settings->scrollSpeed);
       ImGui::SetScrollY(newScroll);
       pendingScrollDelta = 0.0f;
     }
@@ -154,7 +198,8 @@ void Overlay::RenderWindow() {
     ImGui::PopFont();
   }
 
-  ImGui::PopStyleColor(3); // Window colors
+  ImGui::PopStyleVar(5);   // Style vars (rounding, padding, border, scrollbar)
+  ImGui::PopStyleColor(9); // All colors pushed above
 }
 
 void Overlay::SetContent(const std::string &title, const std::string &text,

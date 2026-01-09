@@ -5,7 +5,6 @@
 #include "PCH.h"
 #include "UI/Overlay.h"
 
-
 namespace {
 /**
  * Setup logging using SKSE's logging system.

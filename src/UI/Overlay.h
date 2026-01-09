@@ -26,6 +26,9 @@ public:
   void Toggle();
   [[nodiscard]] bool IsVisible() const { return visible; }
 
+  // Scroll input - accumulates scroll delta from InputHandler
+  void AddScrollInput(float delta);
+
 private:
   Overlay() = default;
   Overlay(const Overlay &) = delete;
@@ -44,6 +47,9 @@ private:
   std::string bookTitle;
   std::string bookText;
   bool isNote = false;
+
+  // Accumulated scroll input from InputHandler
+  float pendingScrollDelta = 0.0f;
 
   // ImGui font pointer
   ImFont *customFont = nullptr;

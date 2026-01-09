@@ -5,7 +5,6 @@
 #include "UI/Overlay.h"
 #include "Utils/BookUtils.h"
 
-
 namespace Easy2Read {
 
 InputHandler *InputHandler::GetSingleton() {
@@ -52,6 +51,21 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
   auto settings = Settings::GetSingleton();
 
   for (auto event = *a_event; event; event = event->next) {
+    // Handle mouse scroll wheel when overlay is visible
+    if (event->eventType == RE::INPUT_EVENT_TYPE::kButton &&
+        event->device.get() == RE::INPUT_DEVICE::kMouse) {
+      auto buttonEvent = static_cast<RE::ButtonEvent *>(event);
+      std::uint32_t scanCode = buttonEvent->GetIDCode();
+
+      // Mouse wheel events: 8 = scroll up, 9 = scroll down
+      if (overlay->IsVisible() && (scanCode == 8 || scanCode == 9)) {
+        float wheelDelta = (scanCode == 8) ? 1.0f : -1.0f;
+        overlay->AddScrollInput(wheelDelta);
+        SKSE::log::trace("Mouse wheel: scanCode={}, delta={}", scanCode,
+                         wheelDelta);
+      }
+    }
+
     if (event->eventType != RE::INPUT_EVENT_TYPE::kButton) {
       continue;
     }

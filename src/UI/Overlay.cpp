@@ -131,6 +131,15 @@ void Overlay::RenderWindow() {
     ImGui::BeginChild("BookTextScroll", ImVec2(0, 0), false,
                       ImGuiWindowFlags_None);
 
+    // Apply any pending scroll input directly (bypasses mouse position check)
+    if (pendingScrollDelta != 0.0f) {
+      float scrollSpeed = 50.0f; // pixels per scroll unit
+      float currentScroll = ImGui::GetScrollY();
+      float newScroll = currentScroll - (pendingScrollDelta * scrollSpeed);
+      ImGui::SetScrollY(newScroll);
+      pendingScrollDelta = 0.0f;
+    }
+
     // Render book text with word wrapping
     ImGui::TextWrapped("%s", bookText.c_str());
 
@@ -183,5 +192,7 @@ void Overlay::Toggle() {
     Show();
   }
 }
+
+void Overlay::AddScrollInput(float delta) { pendingScrollDelta += delta; }
 
 } // namespace Easy2Read

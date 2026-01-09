@@ -29,6 +29,7 @@ set(SOURCES
     src/main.cpp
     src/Config/Settings.cpp
     src/Hooks/MenuWatcher.cpp
+    src/Hooks/InputHandler.cpp
     src/Utils/BookUtils.cpp
 )
 
@@ -36,6 +37,7 @@ set(HEADERS
     src/PCH.h
     src/Config/Settings.h
     src/Hooks/MenuWatcher.h
+    src/Hooks/InputHandler.h
     src/Utils/BookUtils.h
 )
 

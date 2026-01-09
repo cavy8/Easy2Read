@@ -1,5 +1,7 @@
 #include "MenuWatcher.h"
 #include "PCH.h"
+#include "Utils/BookUtils.h"
+
 
 namespace Easy2Read {
 
@@ -57,20 +59,16 @@ void MenuWatcher::CacheBookData() {
     return;
   }
 
-  // Get book title
-  bookTitle = currentBook->GetName();
+  // Use BookUtils for proper text extraction with markup stripping
+  bookTitle = BookUtils::GetBookTitle(currentBook);
+  bookText = BookUtils::GetBookText(currentBook);
 
-  // Get book text/description
-  RE::BSString desc;
-  currentBook->GetDescription(desc, nullptr);
-  bookText = desc.c_str();
+  bool isNote = BookUtils::IsNote(currentBook);
 
-  // Strip HTML-like tags from the text (books use Scaleform markup)
-  // Basic cleanup - we'll do more sophisticated parsing if needed
-  // For now, just log what we found
   SKSE::log::info("  Book: {} (FormID: {:08X})", bookTitle,
                   currentBook->GetFormID());
-  SKSE::log::info("  Text length: {} characters", bookText.length());
+  SKSE::log::info("  Type: {}", isNote ? "Note" : "Book");
+  SKSE::log::info("  Clean text length: {} characters", bookText.length());
 }
 
 void MenuWatcher::ClearBookCache() {

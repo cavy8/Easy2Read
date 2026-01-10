@@ -1,7 +1,7 @@
 #include "BookUtils.h"
 #include "ImageMappings.h"
 #include "PCH.h"
-
+#include "TextSanitization/TextSanitizer.h"
 
 namespace Easy2Read {
 
@@ -11,7 +11,15 @@ std::string BookUtils::GetBookTitle(RE::TESObjectBOOK *book) {
   }
 
   const char *name = book->GetName();
-  return name ? name : "";
+  std::string title = name ? name : "";
+
+  // Apply text sanitization to title
+  auto *sanitizer = TextSanitizer::GetSingleton();
+  if (sanitizer->IsEnabled()) {
+    title = sanitizer->Sanitize(title);
+  }
+
+  return title;
 }
 
 std::string BookUtils::GetBookText(RE::TESObjectBOOK *book) {
@@ -24,10 +32,31 @@ std::string BookUtils::GetBookText(RE::TESObjectBOOK *book) {
 
   std::string rawText = description.c_str();
 
+  // Debug: log raw text length
+  SKSE::log::info("BookUtils: Raw text length: {} bytes", rawText.size());
+
   // Strip markup and normalize whitespace
   std::string cleanText = StripMarkup(rawText);
   cleanText = StripPagebreaks(cleanText);
-  return NormalizeWhitespace(cleanText);
+  cleanText = NormalizeWhitespace(cleanText);
+
+  // Debug: log clean text length
+  SKSE::log::info("BookUtils: Clean text length: {} bytes", cleanText.size());
+
+  // Apply text sanitization to remove unsupported Unicode
+  auto *sanitizer = TextSanitizer::GetSingleton();
+  SKSE::log::info("BookUtils: Sanitizer enabled={}, mode={}",
+                  sanitizer->IsEnabled() ? "true" : "false",
+                  static_cast<int>(sanitizer->GetMode()));
+
+  if (sanitizer->IsEnabled()) {
+    bool needsSanitization = sanitizer->NeedsSanitization(cleanText);
+    SKSE::log::info("BookUtils: NeedsSanitization={}",
+                    needsSanitization ? "true" : "false");
+    cleanText = sanitizer->Sanitize(cleanText);
+  }
+
+  return cleanText;
 }
 
 std::string BookUtils::StripMarkup(const std::string &text) {

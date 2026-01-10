@@ -24,6 +24,18 @@ void Settings::Load() {
     toggleKey = static_cast<std::uint32_t>(
         ini.GetLongValue("General", "ToggleKey", 33));
     SKSE::log::info("  ToggleKey: {}", toggleKey);
+
+    // [TextSanitization]
+    sanitizationEnabled = ini.GetBoolValue("TextSanitization", "Enable", true);
+    sanitizationMode = ini.GetValue("TextSanitization", "Mode", "AnyASCII");
+    sanitizationLogReplacements =
+        ini.GetBoolValue("TextSanitization", "LogReplacements", false);
+    sanitizationMaxExpansionRatio = static_cast<float>(
+        ini.GetDoubleValue("TextSanitization", "MaxExpansionRatio", 3.0));
+
+    SKSE::log::info("  TextSanitization: {} (mode: {})",
+                    sanitizationEnabled ? "enabled" : "disabled",
+                    sanitizationMode);
   }
 
   // Load theming from separate file

@@ -90,6 +90,12 @@ public:
   float scrollbarRounding = 4.0f; // Rounding of scrollbar corners
   float scrollSpeed = 50.0f;      // Pixels per scroll wheel tick
 
+  // ---- Text Sanitization ----
+  bool sanitizationEnabled = true;
+  std::string sanitizationMode = "AnyASCII"; // "Off", "DetectOnly", "AnyASCII"
+  bool sanitizationLogReplacements = false;
+  float sanitizationMaxExpansionRatio = 3.0f;
+
 private:
   Settings() = default;
   Settings(const Settings &) = delete;

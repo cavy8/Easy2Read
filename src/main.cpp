@@ -3,6 +3,7 @@
 #include "Hooks/InputHandler.h"
 #include "Hooks/MenuWatcher.h"
 #include "PCH.h"
+#include "TextSanitization/TextSanitizer.h"
 #include "UI/Overlay.h"
 #include "Utils/ImageMappings.h"
 
@@ -42,6 +43,24 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
 
     // Load image-to-text mappings
     Easy2Read::ImageMappings::GetSingleton()->LoadMappings();
+
+    // Configure text sanitizer from settings
+    {
+      auto *settings = Easy2Read::Settings::GetSingleton();
+      auto *sanitizer = Easy2Read::TextSanitizer::GetSingleton();
+      sanitizer->SetEnabled(settings->sanitizationEnabled);
+      sanitizer->SetLogReplacements(settings->sanitizationLogReplacements);
+      sanitizer->SetMaxExpansionRatio(settings->sanitizationMaxExpansionRatio);
+
+      // Parse mode string
+      if (settings->sanitizationMode == "Off") {
+        sanitizer->SetMode(Easy2Read::SanitizationMode::Off);
+      } else if (settings->sanitizationMode == "DetectOnly") {
+        sanitizer->SetMode(Easy2Read::SanitizationMode::DetectOnly);
+      } else {
+        sanitizer->SetMode(Easy2Read::SanitizationMode::AnyASCII);
+      }
+    }
 
     // Register event handlers
     Easy2Read::MenuWatcher::GetSingleton()->Register();

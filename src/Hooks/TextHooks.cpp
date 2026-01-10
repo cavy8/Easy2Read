@@ -3,7 +3,6 @@
 #include "TextSanitization/TextSanitizer.h"
 #include <xbyak/xbyak.h>
 
-
 // Hook helper functions (pattern from Dynamic String Distributor)
 namespace stl {
 using namespace SKSE::stl;
@@ -153,6 +152,97 @@ void TextHooks::DialogueMenuTextHook::Install() {
 }
 
 // ============================================================================
+// MapMarkerDataHook - REFR FULL (map marker names)
+// ============================================================================
+RE::TESFullName *
+TextHooks::MapMarkerDataHook::thunk(RE::TESObjectREFR *a_marker) {
+  if (!a_marker || a_marker->IsDisabled()) {
+    return func(a_marker);
+  }
+
+  auto *result = func(a_marker);
+
+  // Detect unsupported characters (cannot modify TESFullName in-place)
+  auto *sanitizer = TextSanitizer::GetSingleton();
+  if (sanitizer->IsEnabled() && result) {
+    const char *name = result->GetFullName();
+    if (name && name[0] != '\0' && sanitizer->NeedsSanitization(name)) {
+      SKSE::log::debug("TextHooks: Map marker {:08X} has unsupported chars",
+                       a_marker->GetFormID());
+    }
+  }
+
+  return result;
+}
+
+void TextHooks::MapMarkerDataHook::Install() {
+  // Hook map marker data retrieval
+  // SE: 18755, AE: 19216
+  REL::Relocation<std::uintptr_t> target1{RELOCATION_ID(18755, 19216),
+                                          REL::Relocate(0xA6, 0xE4)};
+  stl::write_thunk_call<MapMarkerDataHook>(target1.address());
+
+  SKSE::log::info("TextHooks: MapMarkerDataHook installed");
+}
+
+// ============================================================================
+// NpcNameHook - NPC FULL (NPC names during file load)
+// ============================================================================
+void TextHooks::NpcNameHook::thunk(RE::TESFullName *a_fullname,
+                                   RE::TESFile *a_file) {
+  func(a_fullname, a_file);
+
+  // Detect unsupported characters (cannot modify TESFullName in-place)
+  auto *sanitizer = TextSanitizer::GetSingleton();
+  if (sanitizer->IsEnabled()) {
+    const char *name = a_fullname->GetFullName();
+    if (name && name[0] != '\0' && sanitizer->NeedsSanitization(name)) {
+      SKSE::log::debug("TextHooks: NPC name has unsupported chars");
+    }
+  }
+}
+
+void TextHooks::NpcNameHook::Install() {
+  // Hook NPC name file stream
+  // SE: 24159, AE: 24663
+  REL::Relocation<std::uintptr_t> target1{RELOCATION_ID(24159, 24663),
+                                          REL::Relocate(0x7CE, 0x924)};
+  stl::write_thunk_call<NpcNameHook>(target1.address());
+
+  SKSE::log::info("TextHooks: NpcNameHook installed");
+}
+
+// ============================================================================
+// QuestTextHook - QUST CNAM (quest journal descriptions)
+// ============================================================================
+void TextHooks::QuestTextHook::thunk(RE::BSString &a_out, char *a_buffer,
+                                     std::uint64_t a_unk) {
+  // Call original function first
+  func(a_out, a_buffer, a_unk);
+
+  // Sanitize the quest description text
+  auto *sanitizer = TextSanitizer::GetSingleton();
+  if (sanitizer->IsEnabled() && a_out.length() > 0) {
+    std::string original = a_out.c_str();
+    std::string sanitized = sanitizer->Sanitize(original);
+    if (sanitized != original) {
+      a_out = sanitized;
+      SKSE::log::debug("TextHooks: Sanitized quest description");
+    }
+  }
+}
+
+void TextHooks::QuestTextHook::Install() {
+  // Hook quest description text (QUST CNAM)
+  // SE: 24778, AE: 25259
+  REL::Relocation<std::uintptr_t> target1{RELOCATION_ID(24778, 25259),
+                                          REL::Relocate(0x21C, 0x221)};
+  stl::write_thunk_call<QuestTextHook>(target1.address());
+
+  SKSE::log::info("TextHooks: QuestTextHook installed");
+}
+
+// ============================================================================
 // Main Install function
 // ============================================================================
 void TextHooks::Install() {
@@ -161,6 +251,9 @@ void TextHooks::Install() {
   GetDescriptionHook::Install();
   DialogueResponseHook::Install();
   DialogueMenuTextHook::Install();
+  MapMarkerDataHook::Install();
+  NpcNameHook::Install();
+  QuestTextHook::Install();
 
   SKSE::log::info("TextHooks: All hooks installed successfully");
 }

@@ -38,6 +38,30 @@ private:
     static inline REL::Relocation<decltype(thunk)> func;
     static void Install();
   };
+
+  /// Hook for map marker names - REFR FULL
+  /// Covers: map marker location names
+  struct MapMarkerDataHook {
+    static RE::TESFullName *thunk(RE::TESObjectREFR *a_marker);
+    static inline REL::Relocation<decltype(thunk)> func;
+    static void Install();
+  };
+
+  /// Hook for NPC names during file load - NPC FULL
+  /// Covers: NPC display names
+  struct NpcNameHook {
+    static void thunk(RE::TESFullName *a_fullname, RE::TESFile *a_file);
+    static inline REL::Relocation<decltype(thunk)> func;
+    static void Install();
+  };
+
+  /// Hook for quest description text - QUST CNAM
+  /// Covers: quest journal descriptions
+  struct QuestTextHook {
+    static void thunk(RE::BSString &a_out, char *a_buffer, std::uint64_t a_unk);
+    static inline REL::Relocation<decltype(thunk)> func;
+    static void Install();
+  };
 };
 
 } // namespace Easy2Read

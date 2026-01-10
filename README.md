@@ -1,14 +1,18 @@
 # Easy2Read
 
-An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom overlay window with configurable fonts for improved readability.
+An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom overlay window with configurable fonts for improved readability, as well as a universal text sanitizer to remove tofu and other unsupported characters.
 
-## Features
+## Overlay Features
 
 - **Customizable Overlay**: Display book text in a clean, readable overlay
 - **Font Options**: Choose from Sovngarde (Skyrim-themed), OpenDyslexic (accessibility), or custom fonts
 - **Full Theming**: Configure colors, opacity, scrollbar, borders, and more
 - **Scroll Wheel Support**: Scroll through long texts with your mouse wheel
 - **Hotkey Toggle**: Press a configurable key to show/hide the overlay while reading
+
+## Sanitizer Features
+
+- **Universal Text Sanitizer**: Remove tofu and other unsupported characters from any text
 
 ## Installation
 
@@ -89,3 +93,9 @@ This project is open source. Font files are licensed under the SIL Open Font Lic
 - CommonLibSSE NG team for the SKSE framework
 - ImGui for the immediate-mode GUI library
 - SSE-ImGui project for D3D11 hooking reference
+- AnyASCII for transliteration table
+- SkyHorizon3 for DSD reference
+- OpenDyslexic font
+- mjorka for Sovngarde font
+- Community Shaders team (input reference)
+- krypto5863 for Tofu Detective (reference)

@@ -39,6 +39,12 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 
   auto overlay = Overlay::GetSingleton();
   auto menuWatcher = MenuWatcher::GetSingleton();
+  auto settings = Settings::GetSingleton();
+
+  // If overlay is disabled in settings, don't process overlay-related input
+  if (!settings->overlayEnabled) {
+    return RE::BSEventNotifyControl::kContinue;
+  }
 
   // If BookMenu closed, hide overlay
   if (!menuWatcher->IsBookMenuOpen()) {
@@ -47,8 +53,6 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
     }
     return RE::BSEventNotifyControl::kContinue;
   }
-
-  auto settings = Settings::GetSingleton();
 
   for (auto event = *a_event; event; event = event->next) {
     // Handle mouse scroll wheel when overlay is visible
@@ -66,6 +70,23 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
       }
     }
 
+    // Handle controller right thumbstick for scrolling
+    if (event->eventType == RE::INPUT_EVENT_TYPE::kThumbstick &&
+        event->device.get() == RE::INPUT_DEVICE::kGamepad) {
+      auto thumbstickEvent = static_cast<RE::ThumbstickEvent *>(event);
+
+      // Right thumbstick (ID 1) for scrolling
+      if (thumbstickEvent->IsRight() && overlay->IsVisible()) {
+        float yAxis = thumbstickEvent->yValue;
+        // Apply deadzone
+        if (std::abs(yAxis) > 0.2f) {
+          float scrollDelta = yAxis * settings->controllerScrollSpeed *
+                              0.016f; // ~60fps frame time
+          overlay->AddScrollInput(scrollDelta);
+        }
+      }
+    }
+
     if (event->eventType != RE::INPUT_EVENT_TYPE::kButton) {
       continue;
     }
@@ -78,6 +99,7 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 
     std::uint32_t keyCode = buttonEvent->GetIDCode();
 
+    // Keyboard toggle
     if (buttonEvent->device == RE::INPUT_DEVICE::kKeyboard) {
       if (keyCode == settings->toggleKey) {
         SKSE::log::info("Toggle hotkey pressed (key {})", keyCode);
@@ -86,6 +108,29 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
           overlay->Hide();
         } else {
           // Set content and show overlay
+          auto book = menuWatcher->GetCurrentBook();
+          if (book) {
+            std::string title = BookUtils::GetBookTitle(book);
+            std::string text = BookUtils::GetBookText(book);
+            overlay->SetContent(title, text);
+          }
+          overlay->Show();
+        }
+      }
+    }
+
+    // Controller toggle - configurable button (default: Y button = 0x8000)
+    if (buttonEvent->device == RE::INPUT_DEVICE::kGamepad) {
+      // Debug: log gamepad button presses (trace level = debug only)
+      SKSE::log::trace("Gamepad button: 0x{:X} ({}), looking for 0x{:X}",
+                       keyCode, keyCode, settings->controllerToggleButton);
+
+      if (keyCode == settings->controllerToggleButton) {
+        SKSE::log::trace("Controller toggle button matched");
+
+        if (overlay->IsVisible()) {
+          overlay->Hide();
+        } else {
           auto book = menuWatcher->GetCurrentBook();
           if (book) {
             std::string title = BookUtils::GetBookTitle(book);

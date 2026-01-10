@@ -25,8 +25,12 @@ public:
   // Convert string to FontPreset enum
   static FontPreset ParseFontPreset(const std::string &str);
 
-  // ---- Hotkey ----
+  // ---- Overlay ----
+  bool overlayEnabled = true;   // Set to false to disable overlay entirely
   std::uint32_t toggleKey = 33; // F key (0x21)
+  std::uint32_t controllerToggleButton =
+      0x8000;                         // Y button on Xbox (0x8000 = 32768)
+  float controllerScrollSpeed = 3.0f; // Scroll speed for controller thumbstick
 
   // ---- Font ----
   FontPreset fontPreset = FontPreset::Sovngarde;

@@ -20,10 +20,18 @@ void Settings::Load() {
   } else {
     SKSE::log::info("Loading configuration from Easy2Read.ini");
 
-    // [General] - only hotkey in main config
+    // [General] - overlay and hotkey settings
+    overlayEnabled = ini.GetBoolValue("General", "EnableOverlay", true);
     toggleKey = static_cast<std::uint32_t>(
         ini.GetLongValue("General", "ToggleKey", 33));
-    SKSE::log::info("  ToggleKey: {}", toggleKey);
+    controllerToggleButton = static_cast<std::uint32_t>(
+        ini.GetLongValue("General", "ControllerToggleButton", 0x8000));
+    controllerScrollSpeed = static_cast<float>(
+        ini.GetDoubleValue("General", "ControllerScrollSpeed", 3.0));
+    SKSE::log::info(
+        "  Overlay: {} (key: {}, controller: 0x{:X}, scroll speed: {})",
+        overlayEnabled ? "enabled" : "disabled", toggleKey,
+        controllerToggleButton, controllerScrollSpeed);
 
     // [TextSanitization]
     sanitizationEnabled = ini.GetBoolValue("TextSanitization", "Enable", true);

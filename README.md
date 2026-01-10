@@ -115,7 +115,9 @@ The built DLL will be in `build-vs/Release/Easy2Read.dll`.
 
 ## License
 
-This project is open source. Font files are licensed under the SIL Open Font License.
+This project is licensed under GPL-3.0. Font files are licensed under the SIL Open Font License.
+
+I can't stop you from doing anything you want with this. That said, I'd still appreciate it if you reached out to me first :)
 
 ## Credits
 

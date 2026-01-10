@@ -2,6 +2,7 @@
 #include "Hooks/D3D11Hook.h"
 #include "Hooks/InputHandler.h"
 #include "Hooks/MenuWatcher.h"
+#include "Hooks/TextHooks.h"
 #include "PCH.h"
 #include "TextSanitization/TextSanitizer.h"
 #include "UI/Overlay.h"
@@ -60,6 +61,13 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
       } else {
         sanitizer->SetMode(Easy2Read::SanitizationMode::AnyASCII);
       }
+    }
+
+    // Install text sanitization hooks for global coverage
+    if (Easy2Read::Settings::GetSingleton()->sanitizationEnabled) {
+      // Allocate trampoline space for hooks (256 bytes should be plenty)
+      SKSE::AllocTrampoline(256);
+      Easy2Read::TextHooks::Install();
     }
 
     // Register event handlers

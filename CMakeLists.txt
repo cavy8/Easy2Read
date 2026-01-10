@@ -31,6 +31,7 @@ set(SOURCES
     src/Hooks/MenuWatcher.cpp
     src/Hooks/InputHandler.cpp
     src/Hooks/D3D11Hook.cpp
+    src/Hooks/TextHooks.cpp
     src/Utils/BookUtils.cpp
     src/Utils/ImageMappings.cpp
     src/TextSanitization/TextSanitizer.cpp
@@ -45,6 +46,7 @@ set(HEADERS
     src/Hooks/MenuWatcher.h
     src/Hooks/InputHandler.h
     src/Hooks/D3D11Hook.h
+    src/Hooks/TextHooks.h
     src/Utils/BookUtils.h
     src/Utils/ImageMappings.h
     src/TextSanitization/TextSanitizer.h

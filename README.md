@@ -1,18 +1,27 @@
 # Easy2Read
 
-An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom overlay window with configurable fonts for improved readability, as well as a universal text sanitizer to remove tofu and other unsupported characters.
+An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom overlay window with configurable fonts for improved readability, plus a universal text sanitizer ("Tofu Remover") that fixes unsupported Unicode characters in dialogue, books, etc.
 
-## Overlay Features
+## Features
 
+### Book Overlay
 - **Customizable Overlay**: Display book text in a clean, readable overlay
 - **Font Options**: Choose from Sovngarde (Skyrim-themed), OpenDyslexic (accessibility), or custom fonts
 - **Full Theming**: Configure colors, opacity, scrollbar, borders, and more
 - **Scroll Wheel Support**: Scroll through long texts with your mouse wheel
 - **Hotkey Toggle**: Press a configurable key to show/hide the overlay while reading
 
-## Sanitizer Features
+### Tofu Remover (Text Sanitizer)
+Automatically replaces unsupported Unicode characters ("tofu" □) with readable ASCII equivalents:
 
-- **Universal Text Sanitizer**: Remove tofu and other unsupported characters from any text
+- **Books, Items, Spells** - DESC/CNAM records
+- **Dialogue Subtitles** - INFO NAM1 records
+- **Dialogue Menu Options** - DIAL FULL records  
+- **Quest Journal Descriptions** - QUST CNAM records
+- **Map Markers** - Detection only (REFR FULL)
+- **NPC Names** - Detection only (NPC FULL)
+
+> **Note**: Loading screen tips use a different system (Scaleform) that seem to crash when hooked the same way as the other text. This is a known limitation at this time.
 
 ## Installation
 
@@ -23,10 +32,14 @@ An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom ove
 
 ## Usage
 
+### Book Overlay
 1. Open any book or note in Skyrim
 2. Press the toggle key (default: **F**) to display the overlay
 3. Scroll with your mouse wheel to read long texts
 4. Press the toggle key again or close the book to hide the overlay
+
+### Tofu Remover
+Works automatically! Unsupported characters are replaced as text loads.
 
 ## Configuration
 
@@ -34,8 +47,22 @@ An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom ove
 
 ```ini
 [General]
-; Hotkey scancode (default F = 33)
-ToggleKey = 33
+ToggleKey = 33  ; Hotkey scancode (default F = 33)
+
+[TextSanitization]
+Enable = true           ; Master toggle for Tofu Remover
+Mode = AnyASCII         ; AnyASCII, DetectOnly, or Off
+DebugMode = false       ; Verbose logging for troubleshooting
+LogReplacements = false ; Log each character replacement
+
+[TextSanitization.Hooks]
+; Disable individual hooks if they cause issues
+EnableDescriptionHook = true    ; Books, items, spells
+EnableDialogueHook = true       ; Dialogue subtitles
+EnableDialogueMenuHook = true   ; Dialogue menu options
+EnableQuestHook = true          ; Quest journal
+EnableMapMarkerHook = true      ; Map markers (detect only)
+EnableNpcNameHook = true        ; NPC names (detect only)
 ```
 
 ### Easy2Read_Theme.ini
@@ -79,10 +106,12 @@ The built DLL will be in `build-vs/Release/Easy2Read.dll`.
 
 ## Known Limitations
 
-1. **VR Not Supported**: This implementation targets SE/AE only
-2. **Multi-page Books**: All text is shown concatenated; original page breaks are not preserved
-3. **Dynamic Text**: Books with script-generated text may show base text
-4. **Input Capturing**: Scroll wheel input is still passed onto the underlying book menu.
+1. **VR Untested**: Built to target VR but not tested. Please report if it works!
+2. **Loading Screens**: Cannot sanitize loading screen tips (Scaleform limitation)
+3. **Multi-page Books**: All text shown concatenated; page breaks not preserved
+4. **Dynamic Text**: Books with script-generated text may show base text in overlay.
+5. **Input Capturing**: Scroll wheel input still passes to underlying book menu
+6. **Map Markers/NPC Names**: Detection only - cannot modify these in-place at this time.
 
 ## License
 
@@ -94,8 +123,9 @@ This project is open source. Font files are licensed under the SIL Open Font Lic
 - ImGui for the immediate-mode GUI library
 - SSE-ImGui project for D3D11 hooking reference
 - AnyASCII for transliteration table
-- SkyHorizon3 for DSD reference
+- SkyHorizon3 for Dynamic String Distributor reference
 - OpenDyslexic font
 - mjorka for Sovngarde font
 - Community Shaders team (input reference)
-- krypto5863 for Tofu Detective (reference)
+- krypto5863 for Tofu Detective (character set reference)
+

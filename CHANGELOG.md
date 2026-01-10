@@ -2,6 +2,25 @@
 
 All notable changes to Easy2Read will be documented in this file.
 
+## [1.1.0] - 2026-01-10
+
+### Added
+- **Tofu Remover**: Automatic text sanitization to replace unsupported Unicode characters
+  - Hooks for: descriptions, dialogue subtitles, dialogue menu, quest journal
+  - Detection-only for: map markers, NPC names
+  - CP1252 (Windows-1252) character handling for common in-game text
+- New INI settings in `[TextSanitization]`:
+  - `Enable` - Master toggle
+  - `Mode` - AnyASCII, DetectOnly, or Off
+  - `DebugMode` - Verbose logging for troubleshooting
+  - `LogReplacements` - Log each character replacement
+- New INI section `[TextSanitization.Hooks]` for per-hook enable/disable
+
+### Technical Details
+- Based on Dynamic String Distributor hooking approach
+- Uses AnyASCII-style transliteration for Unicode → ASCII conversion
+- Character set from Tofu Detective for compatibility detection
+
 ## [1.0.0] - 2026-01-09
 
 ### Added
@@ -20,9 +39,11 @@ All notable changes to Easy2Read will be documented in this file.
 - HTML/markup stripping from book text
 - Pagebreak marker removal
 - Leading/trailing whitespace trimming
+- Image-to-text mappings support for mods like Scribes of Skyrim
 
 ### Technical Details
 - Built with CommonLibSSE NG for SE/AE compatibility
 - ImGui overlay via D3D11 hooking
 - Direct vtable patching for SwapChain::Present hook
 - SKSE input event capture for scroll wheel
+

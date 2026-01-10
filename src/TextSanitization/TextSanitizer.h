@@ -16,6 +16,18 @@ enum class SanitizationMode {
 };
 
 /**
+ * Per-hook enable settings structure.
+ */
+struct HookSettings {
+  bool enableDescription = true;
+  bool enableDialogue = true;
+  bool enableDialogueMenu = true;
+  bool enableQuest = true;
+  bool enableMapMarker = true;
+  bool enableNpcName = true;
+};
+
+/**
  * Runtime text sanitizer that detects and replaces unsupported Unicode
  * characters. Uses the Tofu-Detective valid character set for detection and
  * AnyASCII-style transliteration for replacement.
@@ -67,6 +79,14 @@ public:
     return maxExpansionRatio_;
   }
 
+  // Debug mode
+  void SetDebugMode(bool debug) { debugMode_ = debug; }
+  [[nodiscard]] bool IsDebugMode() const { return debugMode_; }
+
+  // Hook settings
+  void SetHookSettings(const HookSettings &settings) { hooks_ = settings; }
+  [[nodiscard]] const HookSettings &GetHookSettings() const { return hooks_; }
+
 private:
   TextSanitizer();
   ~TextSanitizer() = default;
@@ -86,6 +106,8 @@ private:
   SanitizationMode mode_ = SanitizationMode::AnyASCII;
   bool logReplacements_ = false;
   float maxExpansionRatio_ = 3.0f;
+  bool debugMode_ = false;
+  HookSettings hooks_;
 };
 
 } // namespace Easy2Read

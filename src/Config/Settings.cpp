@@ -28,14 +28,30 @@ void Settings::Load() {
     // [TextSanitization]
     sanitizationEnabled = ini.GetBoolValue("TextSanitization", "Enable", true);
     sanitizationMode = ini.GetValue("TextSanitization", "Mode", "AnyASCII");
+    sanitizationDebugMode =
+        ini.GetBoolValue("TextSanitization", "DebugMode", false);
     sanitizationLogReplacements =
         ini.GetBoolValue("TextSanitization", "LogReplacements", false);
     sanitizationMaxExpansionRatio = static_cast<float>(
         ini.GetDoubleValue("TextSanitization", "MaxExpansionRatio", 3.0));
 
-    SKSE::log::info("  TextSanitization: {} (mode: {})",
+    SKSE::log::info("  TextSanitization: {} (mode: {}{})",
                     sanitizationEnabled ? "enabled" : "disabled",
-                    sanitizationMode);
+                    sanitizationMode, sanitizationDebugMode ? ", debug" : "");
+
+    // [TextSanitization.Hooks] - per-hook enable settings
+    hookEnableDescription = ini.GetBoolValue("TextSanitization.Hooks",
+                                             "EnableDescriptionHook", true);
+    hookEnableDialogue =
+        ini.GetBoolValue("TextSanitization.Hooks", "EnableDialogueHook", true);
+    hookEnableDialogueMenu = ini.GetBoolValue("TextSanitization.Hooks",
+                                              "EnableDialogueMenuHook", true);
+    hookEnableQuest =
+        ini.GetBoolValue("TextSanitization.Hooks", "EnableQuestHook", true);
+    hookEnableMapMarker =
+        ini.GetBoolValue("TextSanitization.Hooks", "EnableMapMarkerHook", true);
+    hookEnableNpcName =
+        ini.GetBoolValue("TextSanitization.Hooks", "EnableNpcNameHook", true);
   }
 
   // Load theming from separate file

@@ -333,8 +333,10 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
       if (c >= 0x80 && c <= 0x9F) {
         // Windows-1252 character - use CP1252 translation table
         std::string_view replacement = kCP1252Table[c - 0x80];
-        SKSE::log::info("TextSanitizer: CP1252 byte 0x{:02X} -> '{}'", c,
-                        replacement);
+        if (debugMode_ || logReplacements_) {
+          SKSE::log::info("TextSanitizer: CP1252 byte 0x{:02X} -> '{}'", c,
+                          replacement);
+        }
 
         if (mode_ == SanitizationMode::AnyASCII && !replacement.empty()) {
           result.append(replacement);
@@ -388,8 +390,10 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
       } else if (mode_ == SanitizationMode::DetectOnly) {
         // DetectOnly: log but keep original
         result.append(input.substr(i, charLen));
-        SKSE::log::info("TextSanitizer: Detected unsupported U+{:04X}",
-                        codepoint);
+        if (debugMode_ || logReplacements_) {
+          SKSE::log::info("TextSanitizer: Detected unsupported U+{:04X}",
+                          codepoint);
+        }
       }
     }
 

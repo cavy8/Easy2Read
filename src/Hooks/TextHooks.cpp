@@ -248,12 +248,28 @@ void TextHooks::QuestTextHook::Install() {
 void TextHooks::Install() {
   SKSE::log::info("TextHooks: Installing text sanitization hooks...");
 
-  GetDescriptionHook::Install();
-  DialogueResponseHook::Install();
-  DialogueMenuTextHook::Install();
-  MapMarkerDataHook::Install();
-  NpcNameHook::Install();
-  QuestTextHook::Install();
+  // Get hook settings from sanitizer
+  auto *sanitizer = TextSanitizer::GetSingleton();
+  const auto &hooks = sanitizer->GetHookSettings();
+
+  if (hooks.enableDescription) {
+    GetDescriptionHook::Install();
+  }
+  if (hooks.enableDialogue) {
+    DialogueResponseHook::Install();
+  }
+  if (hooks.enableDialogueMenu) {
+    DialogueMenuTextHook::Install();
+  }
+  if (hooks.enableMapMarker) {
+    MapMarkerDataHook::Install();
+  }
+  if (hooks.enableNpcName) {
+    NpcNameHook::Install();
+  }
+  if (hooks.enableQuest) {
+    QuestTextHook::Install();
+  }
 
   SKSE::log::info("TextHooks: All hooks installed successfully");
 }

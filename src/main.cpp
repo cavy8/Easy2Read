@@ -52,6 +52,7 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
       sanitizer->SetEnabled(settings->sanitizationEnabled);
       sanitizer->SetLogReplacements(settings->sanitizationLogReplacements);
       sanitizer->SetMaxExpansionRatio(settings->sanitizationMaxExpansionRatio);
+      sanitizer->SetDebugMode(settings->sanitizationDebugMode);
 
       // Parse mode string
       if (settings->sanitizationMode == "Off") {
@@ -61,6 +62,16 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
       } else {
         sanitizer->SetMode(Easy2Read::SanitizationMode::AnyASCII);
       }
+
+      // Configure per-hook enable settings
+      Easy2Read::HookSettings hooks;
+      hooks.enableDescription = settings->hookEnableDescription;
+      hooks.enableDialogue = settings->hookEnableDialogue;
+      hooks.enableDialogueMenu = settings->hookEnableDialogueMenu;
+      hooks.enableQuest = settings->hookEnableQuest;
+      hooks.enableMapMarker = settings->hookEnableMapMarker;
+      hooks.enableNpcName = settings->hookEnableNpcName;
+      sanitizer->SetHookSettings(hooks);
     }
 
     // Install text sanitization hooks for global coverage

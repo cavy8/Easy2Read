@@ -93,8 +93,17 @@ public:
   // ---- Text Sanitization ----
   bool sanitizationEnabled = true;
   std::string sanitizationMode = "AnyASCII"; // "Off", "DetectOnly", "AnyASCII"
+  bool sanitizationDebugMode = false;
   bool sanitizationLogReplacements = false;
   float sanitizationMaxExpansionRatio = 3.0f;
+
+  // ---- Per-hook enable settings ----
+  bool hookEnableDescription = true;
+  bool hookEnableDialogue = true;
+  bool hookEnableDialogueMenu = true;
+  bool hookEnableQuest = true;
+  bool hookEnableMapMarker = true;
+  bool hookEnableNpcName = true;
 
 private:
   Settings() = default;

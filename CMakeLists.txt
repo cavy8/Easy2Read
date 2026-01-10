@@ -32,6 +32,7 @@ set(SOURCES
     src/Hooks/InputHandler.cpp
     src/Hooks/D3D11Hook.cpp
     src/Utils/BookUtils.cpp
+    src/Utils/ImageMappings.cpp
     src/UI/Overlay.cpp
     src/ImGui/imgui_impl_dx11.cpp
     src/ImGui/imgui_impl_win32.cpp
@@ -44,6 +45,7 @@ set(HEADERS
     src/Hooks/InputHandler.h
     src/Hooks/D3D11Hook.h
     src/Utils/BookUtils.h
+    src/Utils/ImageMappings.h
     src/UI/Overlay.h
     src/ImGui/imgui_impl_dx11.h
     src/ImGui/imgui_impl_win32.h

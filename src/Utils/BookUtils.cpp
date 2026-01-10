@@ -1,5 +1,7 @@
 #include "BookUtils.h"
+#include "ImageMappings.h"
 #include "PCH.h"
+
 
 namespace Easy2Read {
 
@@ -73,6 +75,57 @@ std::string BookUtils::StripMarkup(const std::string &text) {
     }
 
     if (c == '<') {
+      // Check for img tag
+      if (i + 4 < text.size()) {
+        std::string tagCheck = text.substr(i, 4);
+        if (tagCheck == "<img" || tagCheck == "<IMG") {
+          // Find the end of the tag
+          size_t tagEnd = text.find('>', i);
+          if (tagEnd != std::string::npos) {
+            // Extract the full tag
+            std::string fullTag = text.substr(i, tagEnd - i + 1);
+
+            // Find src attribute
+            size_t srcPos = fullTag.find("src=");
+            if (srcPos == std::string::npos) {
+              srcPos = fullTag.find("SRC=");
+            }
+
+            if (srcPos != std::string::npos) {
+              // Find the quote after src=
+              size_t quoteStart = fullTag.find_first_of("'\"", srcPos);
+              if (quoteStart != std::string::npos) {
+                char quoteChar = fullTag[quoteStart];
+                size_t quoteEnd = fullTag.find(quoteChar, quoteStart + 1);
+                if (quoteEnd != std::string::npos) {
+                  std::string srcValue =
+                      fullTag.substr(quoteStart + 1, quoteEnd - quoteStart - 1);
+
+                  // Remove img:// prefix if present
+                  if (srcValue.substr(0, 6) == "img://") {
+                    srcValue = srcValue.substr(6);
+                  }
+
+                  // Look up replacement
+                  auto *imageMappings = ImageMappings::GetSingleton();
+                  std::string replacement =
+                      imageMappings->GetReplacement(srcValue);
+
+                  if (!replacement.empty()) {
+                    result += replacement;
+                  }
+                  // If no mapping, the image is just removed (no output)
+                }
+              }
+            }
+
+            // Skip past the entire img tag
+            i = tagEnd;
+            continue;
+          }
+        }
+      }
+
       // Check for special tags that should become newlines
       if (i + 3 < text.size()) {
         std::string tagStart = text.substr(i, 4);

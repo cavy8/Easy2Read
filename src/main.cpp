@@ -4,6 +4,7 @@
 #include "Hooks/MenuWatcher.h"
 #include "PCH.h"
 #include "UI/Overlay.h"
+#include "Utils/ImageMappings.h"
 
 namespace {
 /**
@@ -37,7 +38,12 @@ void SetupLog() {
 void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
   switch (a_msg->type) {
   case SKSE::MessagingInterface::kDataLoaded:
-    logger::info("Data loaded - registering event handlers");
+    logger::info("Data loaded - initializing");
+
+    // Load image-to-text mappings
+    Easy2Read::ImageMappings::GetSingleton()->LoadMappings();
+
+    // Register event handlers
     Easy2Read::MenuWatcher::GetSingleton()->Register();
     Easy2Read::InputHandler::GetSingleton()->Register();
 

@@ -96,7 +96,7 @@ public:
 
   // ---- Text Sanitization ----
   bool sanitizationEnabled = true;
-  std::string sanitizationMode = "AnyASCII"; // "Off", "DetectOnly", "AnyASCII"
+  std::string sanitizationMode = "On"; // "Off", "DetectOnly", "On"
   bool sanitizationDebugMode = false;
   bool sanitizationLogReplacements = false;
   float sanitizationMaxExpansionRatio = 3.0f;

@@ -2,6 +2,22 @@
 
 All notable changes to Easy2Read will be documented in this file.
 
+## [1.2.0] - 2026-01-10
+
+### Added
+- **Controller Support**: Full gamepad support for overlay
+  - Configurable toggle button (default: Y button on Xbox)
+  - Right thumbstick for scrolling through text
+  - Adjustable scroll speed via `ControllerScrollSpeed` setting
+- New INI settings in `[General]`:
+  - `EnableOverlay` - Master toggle to disable overlay feature entirely
+  - `ControllerToggleButton` - Configurable gamepad button for toggle
+  - `ControllerScrollSpeed` - Scroll speed for controller thumbstick
+
+### Changed
+- Renamed text sanitization mode from `AnyASCII` to `On` for clarity
+- Mode options are now: `On`, `DetectOnly`, or `Off`
+
 ## [1.1.0] - 2026-01-10
 
 ### Added
@@ -11,7 +27,6 @@ All notable changes to Easy2Read will be documented in this file.
   - CP1252 (Windows-1252) character handling for common in-game text
 - New INI settings in `[TextSanitization]`:
   - `Enable` - Master toggle
-  - `Mode` - AnyASCII, DetectOnly, or Off
   - `DebugMode` - Verbose logging for troubleshooting
   - `LogReplacements` - Log each character replacement
 - New INI section `[TextSanitization.Hooks]` for per-hook enable/disable

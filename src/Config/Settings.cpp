@@ -35,7 +35,7 @@ void Settings::Load() {
 
     // [TextSanitization]
     sanitizationEnabled = ini.GetBoolValue("TextSanitization", "Enable", true);
-    sanitizationMode = ini.GetValue("TextSanitization", "Mode", "AnyASCII");
+    sanitizationMode = ini.GetValue("TextSanitization", "Mode", "On");
     sanitizationDebugMode =
         ini.GetBoolValue("TextSanitization", "DebugMode", false);
     sanitizationLogReplacements =

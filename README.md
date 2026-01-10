@@ -51,7 +51,7 @@ ToggleKey = 33  ; Hotkey scancode (default F = 33)
 
 [TextSanitization]
 Enable = true           ; Master toggle for Tofu Remover
-Mode = AnyASCII         ; AnyASCII, DetectOnly, or Off
+Mode = On               ; On, DetectOnly, or Off
 DebugMode = false       ; Verbose logging for troubleshooting
 LogReplacements = false ; Log each character replacement
 

@@ -21,14 +21,14 @@ Automatically replaces unsupported Unicode characters ("tofu" □) with readable
 - **Map Markers** - Detection only (REFR FULL)
 - **NPC Names** - Detection only (NPC FULL)
 
-> **Note**: Loading screen tips use a different system (Scaleform) that seem to crash when hooked the same way as the other text. This is a known limitation at this time.
+> **Note**: Loading screen tips use a different system (Scaleform) that seems to crash when hooked the same way as the other text. As such, I've not implemented a hook for it. This is a known limitation at this time.
 
 ## Installation
 
 1. Install [SKSE](https://skse.silverlock.org/) for your Skyrim version
-2. Copy `Easy2Read.dll` to `Data/SKSE/Plugins/`
-3. Copy `Easy2Read.ini` and `Easy2Read_Theme.ini` to `Data/SKSE/Plugins/`
-4. (Optional) Copy font files to `Data/SKSE/Plugins/Easy2Read/`
+2. Copy the `Data/SKSE/Plugins/Easy2Read` directory to your Skyrim installation's `Data/SKSE/Plugins/` directory
+3. ???
+4. Profit
 
 ## Usage
 

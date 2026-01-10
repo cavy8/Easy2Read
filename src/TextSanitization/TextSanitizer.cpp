@@ -3,7 +3,6 @@
 #include <array>
 #include <unordered_map>
 
-
 namespace Easy2Read {
 
 // AnyASCII-style transliteration table for common unsupported characters
@@ -103,6 +102,43 @@ static const std::unordered_map<uint32_t, std::string_view>
         {0x00BC, "1/4"}, // VULGAR FRACTION ONE QUARTER
         {0x00BE, "3/4"}, // VULGAR FRACTION THREE QUARTERS
 };
+
+// Windows-1252 (CP1252) high bytes 0x80-0x9F translation
+// These are NOT valid UTF-8 but commonly appear in Skyrim text
+static const std::array<std::string_view, 32> kCP1252Table = {{
+    "EUR",  // 0x80 - Euro sign
+    "",     // 0x81 - undefined
+    ",",    // 0x82 - Single low-9 quotation mark
+    "f",    // 0x83 - Latin small letter f with hook
+    ",,",   // 0x84 - Double low-9 quotation mark
+    "...",  // 0x85 - Horizontal ellipsis
+    "+",    // 0x86 - Dagger
+    "++",   // 0x87 - Double dagger
+    "^",    // 0x88 - Modifier letter circumflex accent
+    "%",    // 0x89 - Per mille sign
+    "S",    // 0x8A - Latin capital letter S with caron
+    "<",    // 0x8B - Single left-pointing angle quotation mark
+    "OE",   // 0x8C - Latin capital ligature OE
+    "",     // 0x8D - undefined
+    "Z",    // 0x8E - Latin capital letter Z with caron
+    "",     // 0x8F - undefined
+    "",     // 0x90 - undefined
+    "'",    // 0x91 - Left single quotation mark
+    "'",    // 0x92 - Right single quotation mark
+    "\"",   // 0x93 - Left double quotation mark
+    "\"",   // 0x94 - Right double quotation mark
+    "*",    // 0x95 - Bullet
+    "-",    // 0x96 - En dash
+    "--",   // 0x97 - Em dash
+    "~",    // 0x98 - Small tilde
+    "(TM)", // 0x99 - Trade mark sign
+    "s",    // 0x9A - Latin small letter s with caron
+    ">",    // 0x9B - Single right-pointing angle quotation mark
+    "oe",   // 0x9C - Latin small ligature oe
+    "",     // 0x9D - undefined
+    "z",    // 0x9E - Latin small letter z with caron
+    "Y",    // 0x9F - Latin capital letter Y with diaeresis
+}};
 
 TextSanitizer *TextSanitizer::GetSingleton() {
   static TextSanitizer singleton;
@@ -292,12 +328,42 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
       codepoint |= (static_cast<unsigned char>(input[i + 3]) & 0x3F);
       charLen = 4;
     } else {
-      // Invalid UTF-8 - replace with ?
-      if (mode_ == SanitizationMode::AnyASCII) {
-        result += '?';
-      }
-      if (logReplacements_) {
-        SKSE::log::debug("TextSanitizer: Invalid UTF-8 byte 0x{:02X}", c);
+      // Not valid UTF-8 multibyte start - check if it's Windows-1252 (CP1252)
+      // CP1252 uses bytes 0x80-0x9F for special characters
+      if (c >= 0x80 && c <= 0x9F) {
+        // Windows-1252 character - use CP1252 translation table
+        std::string_view replacement = kCP1252Table[c - 0x80];
+        SKSE::log::info("TextSanitizer: CP1252 byte 0x{:02X} -> '{}'", c,
+                        replacement);
+
+        if (mode_ == SanitizationMode::AnyASCII && !replacement.empty()) {
+          result.append(replacement);
+        } else if (mode_ == SanitizationMode::DetectOnly) {
+          result += static_cast<char>(c);
+        }
+      } else if (c >= 0xA0 && c <= 0xFF) {
+        // Latin-1 Supplement (0xA0-0xFF) - these map directly to Unicode
+        // U+00A0-U+00FF Check if they're in our supported set
+        if (IsSupported(c)) {
+          result += static_cast<char>(c);
+        } else {
+          // Try to transliterate
+          auto it = kTransliterationTable.find(c);
+          if (it != kTransliterationTable.end()) {
+            if (mode_ == SanitizationMode::AnyASCII) {
+              result.append(it->second);
+            }
+          } else if (mode_ == SanitizationMode::AnyASCII) {
+            result += '?';
+          }
+        }
+      } else {
+        // Truly invalid byte
+        SKSE::log::info("TextSanitizer: Invalid byte 0x{:02X} at position {}",
+                        c, i);
+        if (mode_ == SanitizationMode::AnyASCII) {
+          result += '?';
+        }
       }
       i += 1;
       continue;
@@ -311,22 +377,19 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
       if (mode_ == SanitizationMode::AnyASCII) {
         std::string_view replacement = GetReplacement(codepoint);
 
+        // Always log for debugging
+        SKSE::log::info("TextSanitizer: Replacing U+{:04X} -> '{}'", codepoint,
+                        replacement);
+
         // Check expansion limit
         if (result.size() + replacement.size() <= maxOutputSize) {
           result.append(replacement);
         }
-
-        if (logReplacements_) {
-          SKSE::log::debug("TextSanitizer: U+{:04X} -> '{}'", codepoint,
-                           replacement);
-        }
       } else if (mode_ == SanitizationMode::DetectOnly) {
         // DetectOnly: log but keep original
         result.append(input.substr(i, charLen));
-        if (logReplacements_) {
-          SKSE::log::info("TextSanitizer: Detected unsupported U+{:04X}",
-                          codepoint);
-        }
+        SKSE::log::info("TextSanitizer: Detected unsupported U+{:04X}",
+                        codepoint);
       }
     }
 

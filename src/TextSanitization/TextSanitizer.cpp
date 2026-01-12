@@ -303,6 +303,10 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
   std::string result;
   result.reserve(input.size());
 
+  // Track if we're inside angle brackets (e.g., <Alias=Player>)
+  // Content inside these should be preserved as-is
+  bool insideAngleBrackets = false;
+
   size_t i = 0;
   while (i < input.size()) {
     uint32_t codepoint = 0;
@@ -312,21 +316,59 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
     if (c < 0x80) {
       codepoint = c;
       charLen = 1;
+
+      // Check for angle bracket boundaries
+      if (c == '<') {
+        insideAngleBrackets = true;
+        result += static_cast<char>(c);
+        i += 1;
+        continue;
+      } else if (c == '>') {
+        insideAngleBrackets = false;
+        result += static_cast<char>(c);
+        i += 1;
+        continue;
+      }
+
+      // If inside angle brackets, just copy the byte and continue
+      if (insideAngleBrackets) {
+        result += static_cast<char>(c);
+        i += 1;
+        continue;
+      }
     } else if ((c & 0xE0) == 0xC0 && i + 1 < input.size()) {
       codepoint = (c & 0x1F) << 6;
       codepoint |= (static_cast<unsigned char>(input[i + 1]) & 0x3F);
       charLen = 2;
+      // If inside angle brackets, copy and skip sanitization
+      if (insideAngleBrackets) {
+        result.append(input.substr(i, charLen));
+        i += charLen;
+        continue;
+      }
     } else if ((c & 0xF0) == 0xE0 && i + 2 < input.size()) {
       codepoint = (c & 0x0F) << 12;
       codepoint |= (static_cast<unsigned char>(input[i + 1]) & 0x3F) << 6;
       codepoint |= (static_cast<unsigned char>(input[i + 2]) & 0x3F);
       charLen = 3;
+      // If inside angle brackets, copy and skip sanitization
+      if (insideAngleBrackets) {
+        result.append(input.substr(i, charLen));
+        i += charLen;
+        continue;
+      }
     } else if ((c & 0xF8) == 0xF0 && i + 3 < input.size()) {
       codepoint = (c & 0x07) << 18;
       codepoint |= (static_cast<unsigned char>(input[i + 1]) & 0x3F) << 12;
       codepoint |= (static_cast<unsigned char>(input[i + 2]) & 0x3F) << 6;
       codepoint |= (static_cast<unsigned char>(input[i + 3]) & 0x3F);
       charLen = 4;
+      // If inside angle brackets, copy and skip sanitization
+      if (insideAngleBrackets) {
+        result.append(input.substr(i, charLen));
+        i += charLen;
+        continue;
+      }
     } else {
       // Not valid UTF-8 multibyte start - check if it's Windows-1252 (CP1252)
       // CP1252 uses bytes 0x80-0x9F for special characters

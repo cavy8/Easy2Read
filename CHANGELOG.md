@@ -2,6 +2,16 @@
 
 All notable changes to Easy2Read will be documented in this file.
 
+## [1.2.1] - 2026-01-12
+
+### Fixed
+- **D3D12 Compatibility**: Fixed overlay rendering when Community Shaders frame generation is enabled
+  - Overlay now renders correctly on top of book content with D3D12 swap chain proxy
+  - Uses currently bound render target from device context in D3D12 fallback mode
+- **Tofu Remover**: Improved angle bracket handling
+  - Content inside `<>` brackets (e.g., `<Alias=Player>`) is now preserved as-is
+  - Only preserves bracket content when both opening and closing brackets exist
+
 ## [1.2.0] - 2026-01-10
 
 ### Added

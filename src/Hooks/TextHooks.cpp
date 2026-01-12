@@ -51,6 +51,11 @@ void TextHooks::GetDescriptionHook::thunk(RE::TESDescription *a_desc,
   // Call original function first
   func(a_desc, a_out, a_parent, a_chunkID);
 
+  // Skip MESG (Message) records - they cause crashes during sanitization
+  if (a_parent && a_parent->GetFormType() == RE::FormType::Message) {
+    return;
+  }
+
   // Sanitize the output
   auto *sanitizer = TextSanitizer::GetSingleton();
   if (sanitizer->IsEnabled() && a_out.length() > 0) {

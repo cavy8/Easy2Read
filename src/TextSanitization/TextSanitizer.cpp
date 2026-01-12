@@ -304,8 +304,13 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
   result.reserve(input.size());
 
   // Track if we're inside angle brackets (e.g., <Alias=Player>)
-  // Content inside these should be preserved as-is
+  // Content inside these should be preserved as-is, but only if both < and >
+  // exist
   bool insideAngleBrackets = false;
+
+  // Check if the string has matching angle brackets (both < and >)
+  bool hasMatchingBrackets = (input.find('<') != std::string_view::npos) &&
+                             (input.find('>') != std::string_view::npos);
 
   size_t i = 0;
   while (i < input.size()) {
@@ -317,24 +322,26 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
       codepoint = c;
       charLen = 1;
 
-      // Check for angle bracket boundaries
-      if (c == '<') {
-        insideAngleBrackets = true;
-        result += static_cast<char>(c);
-        i += 1;
-        continue;
-      } else if (c == '>') {
-        insideAngleBrackets = false;
-        result += static_cast<char>(c);
-        i += 1;
-        continue;
-      }
+      // Check for angle bracket boundaries (only if matching brackets exist)
+      if (hasMatchingBrackets) {
+        if (c == '<') {
+          insideAngleBrackets = true;
+          result += static_cast<char>(c);
+          i += 1;
+          continue;
+        } else if (c == '>') {
+          insideAngleBrackets = false;
+          result += static_cast<char>(c);
+          i += 1;
+          continue;
+        }
 
-      // If inside angle brackets, just copy the byte and continue
-      if (insideAngleBrackets) {
-        result += static_cast<char>(c);
-        i += 1;
-        continue;
+        // If inside angle brackets, just copy the byte and continue
+        if (insideAngleBrackets) {
+          result += static_cast<char>(c);
+          i += 1;
+          continue;
+        }
       }
     } else if ((c & 0xE0) == 0xC0 && i + 1 < input.size()) {
       codepoint = (c & 0x1F) << 6;

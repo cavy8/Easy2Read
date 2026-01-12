@@ -2,6 +2,18 @@
 
 All notable changes to Easy2Read will be documented in this file.
 
+## [1.2.2] - 2026-01-12
+
+### Fixed
+- **Tofu Remover**: Fixed crash when processing MESG (Message) records
+  - MESG records are now skipped during sanitization
+- **Tofu Remover**: Improved handling of unmapped characters
+  - Characters without transliteration mappings now pass through unchanged instead of being replaced with `?`
+  - Better support for non-English languages
+
+### Added
+- PDB file generation for debugging crash reports
+
 ## [1.2.1] - 2026-01-12
 
 ### Fixed

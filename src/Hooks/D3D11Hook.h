@@ -39,9 +39,11 @@ private:
   ID3D11Device *device = nullptr;
   ID3D11DeviceContext *context = nullptr;
   ID3D11RenderTargetView *renderTargetView = nullptr;
+  IDXGISwapChain *swapChain_ = nullptr;
 
   bool initialized = false;
   bool imguiInitialized = false;
+  bool usingD3D12Fallback = false;
 
   // Original function pointer
   inline static decltype(&HookedPresent) originalPresent = nullptr;

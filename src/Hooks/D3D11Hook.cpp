@@ -5,7 +5,6 @@
 #include "UI/Overlay.h"
 #include <imgui.h>
 
-
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
@@ -94,36 +93,65 @@ HRESULT WINAPI D3D11Hook::HookedPresent(IDXGISwapChain *pSwapChain,
   }
 
   hook->RenderImGui();
-
   return originalPresent(pSwapChain, SyncInterval, Flags);
 }
 
 bool D3D11Hook::InitImGui(IDXGISwapChain *swapChain) {
   SKSE::log::info("Initializing ImGui...");
 
-  // Get D3D11 device and context
-  if (FAILED(swapChain->GetDevice(__uuidof(ID3D11Device),
-                                  reinterpret_cast<void **>(&device)))) {
-    SKSE::log::error("Failed to get D3D11 device from swap chain");
-    return false;
+  // Store swapchain for later use
+  swapChain_ = swapChain;
+
+  // Try to get D3D11 device from swap chain first
+  HRESULT hr = swapChain->GetDevice(__uuidof(ID3D11Device),
+                                    reinterpret_cast<void **>(&device));
+
+  if (FAILED(hr)) {
+    // Swap chain GetDevice failed - likely D3D12 swap chain proxy (frame
+    // generation) Get D3D11 device directly from Skyrim's renderer
+    SKSE::log::warn("Failed to get D3D11 device from swap chain (likely D3D12 "
+                    "proxy). Using BSGraphics device...");
+
+    auto renderer = RE::BSGraphics::Renderer::GetSingleton();
+    if (!renderer) {
+      SKSE::log::error("Failed to get BSGraphics::Renderer singleton");
+      return false;
+    }
+
+    // Get device and context from renderer data
+    auto &renderData = renderer->data;
+    device = reinterpret_cast<ID3D11Device *>(renderData.forwarder);
+
+    if (!device) {
+      SKSE::log::error("Failed to get D3D11 device from BSGraphics::Renderer");
+      return false;
+    }
+
+    usingD3D12Fallback = true;
+    SKSE::log::info(
+        "Using D3D11 device from BSGraphics::Renderer (D3D12 fallback mode)");
   }
+
   device->GetImmediateContext(&context);
 
-  // Get back buffer and create render target view
-  ID3D11Texture2D *backBuffer = nullptr;
-  if (FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
-                                  reinterpret_cast<void **>(&backBuffer)))) {
-    SKSE::log::error("Failed to get back buffer");
-    return false;
-  }
+  // Get back buffer and create render target view (only for non-D3D12 mode)
+  // In D3D12 mode, we recreate render target each frame
+  if (!usingD3D12Fallback) {
+    ID3D11Texture2D *backBuffer = nullptr;
+    if (FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
+                                    reinterpret_cast<void **>(&backBuffer)))) {
+      SKSE::log::error("Failed to get back buffer");
+      return false;
+    }
 
-  if (FAILED(device->CreateRenderTargetView(backBuffer, nullptr,
-                                            &renderTargetView))) {
+    if (FAILED(device->CreateRenderTargetView(backBuffer, nullptr,
+                                              &renderTargetView))) {
+      backBuffer->Release();
+      SKSE::log::error("Failed to create render target view");
+      return false;
+    }
     backBuffer->Release();
-    SKSE::log::error("Failed to create render target view");
-    return false;
   }
-  backBuffer->Release();
 
   // Get the render window handle
   DXGI_SWAP_CHAIN_DESC desc;
@@ -159,6 +187,35 @@ void D3D11Hook::RenderImGui() {
     return;
   }
 
+  // In D3D12 fallback mode, use the currently bound render target
+  // (which should be what CS is rendering to)
+  if (usingD3D12Fallback && Overlay::GetSingleton()->IsVisible()) {
+    // Release old render target view
+    if (renderTargetView) {
+      renderTargetView->Release();
+      renderTargetView = nullptr;
+    }
+
+    // Get the currently bound render target from the context
+    ID3D11RenderTargetView *currentRTV = nullptr;
+    context->OMGetRenderTargets(1, &currentRTV, nullptr);
+
+    if (currentRTV) {
+      // Use the current render target
+      renderTargetView = currentRTV;
+      // Note: We don't Release() currentRTV here since we're keeping it
+    } else {
+      // Fallback: try to get from swap chain
+      ID3D11Texture2D *backBuffer = nullptr;
+      if (SUCCEEDED(
+              swapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D),
+                                    reinterpret_cast<void **>(&backBuffer)))) {
+        device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView);
+        backBuffer->Release();
+      }
+    }
+  }
+
   // Start new frame
   ImGui_ImplDX11_NewFrame();
   ImGui_ImplWin32_NewFrame();
@@ -171,8 +228,10 @@ void D3D11Hook::RenderImGui() {
 
   // Render
   ImGui::Render();
-  context->OMSetRenderTargets(1, &renderTargetView, nullptr);
-  ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+  if (renderTargetView) {
+    context->OMSetRenderTargets(1, &renderTargetView, nullptr);
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+  }
 }
 
 } // namespace Easy2Read

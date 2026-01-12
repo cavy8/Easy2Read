@@ -235,7 +235,8 @@ std::string_view TextSanitizer::GetReplacement(uint32_t codepoint) const {
   if (it != kTransliterationTable.end()) {
     return it->second;
   }
-  return "?";
+  // Return empty to indicate no mapping - caller should pass through original
+  return "";
 }
 
 bool TextSanitizer::NeedsSanitization(std::string_view input) const {
@@ -405,16 +406,16 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
               result.append(it->second);
             }
           } else if (mode_ == SanitizationMode::AnyASCII) {
-            result += '?';
+            // No mapping found - pass through unchanged
+            result += static_cast<char>(c);
           }
         }
       } else {
-        // Truly invalid byte
-        SKSE::log::info("TextSanitizer: Invalid byte 0x{:02X} at position {}",
-                        c, i);
-        if (mode_ == SanitizationMode::AnyASCII) {
-          result += '?';
-        }
+        // Truly invalid byte - pass through unchanged
+        SKSE::log::debug("TextSanitizer: Unknown byte 0x{:02X} at position {}, "
+                         "passing through",
+                         c, i);
+        result += static_cast<char>(c);
       }
       i += 1;
       continue;
@@ -428,13 +429,19 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
       if (mode_ == SanitizationMode::AnyASCII) {
         std::string_view replacement = GetReplacement(codepoint);
 
-        // Always log for debugging
-        SKSE::log::info("TextSanitizer: Replacing U+{:04X} -> '{}'", codepoint,
-                        replacement);
-
-        // Check expansion limit
-        if (result.size() + replacement.size() <= maxOutputSize) {
-          result.append(replacement);
+        // If no mapping, pass through unchanged
+        if (replacement.empty()) {
+          result.append(input.substr(i, charLen));
+          SKSE::log::debug(
+              "TextSanitizer: No mapping for U+{:04X}, passing through",
+              codepoint);
+        } else {
+          SKSE::log::debug("TextSanitizer: Replacing U+{:04X} -> '{}'",
+                           codepoint, replacement);
+          // Check expansion limit
+          if (result.size() + replacement.size() <= maxOutputSize) {
+            result.append(replacement);
+          }
         }
       } else if (mode_ == SanitizationMode::DetectOnly) {
         // DetectOnly: log but keep original

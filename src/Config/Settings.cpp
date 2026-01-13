@@ -42,10 +42,13 @@ void Settings::Load() {
         ini.GetBoolValue("TextSanitization", "LogReplacements", false);
     sanitizationMaxExpansionRatio = static_cast<float>(
         ini.GetDoubleValue("TextSanitization", "MaxExpansionRatio", 3.0));
+    sanitizationSafeMode =
+        ini.GetBoolValue("TextSanitization", "SafeMode", true);
 
-    SKSE::log::info("  TextSanitization: {} (mode: {}{})",
+    SKSE::log::info("  TextSanitization: {} (mode: {}{}, safe: {})",
                     sanitizationEnabled ? "enabled" : "disabled",
-                    sanitizationMode, sanitizationDebugMode ? ", debug" : "");
+                    sanitizationMode, sanitizationDebugMode ? ", debug" : "",
+                    sanitizationSafeMode ? "yes" : "no");
 
     // [TextSanitization.Hooks] - per-hook enable settings
     hookEnableDescription = ini.GetBoolValue("TextSanitization.Hooks",

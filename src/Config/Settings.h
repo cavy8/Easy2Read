@@ -100,6 +100,8 @@ public:
   bool sanitizationDebugMode = false;
   bool sanitizationLogReplacements = false;
   float sanitizationMaxExpansionRatio = 3.0f;
+  bool sanitizationSafeMode =
+      true; // Limit hooks to safe form types only (e.g., books)
 
   // ---- Per-hook enable settings ----
   bool hookEnableDescription = true;

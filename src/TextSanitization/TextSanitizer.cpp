@@ -390,7 +390,8 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
 
         if (mode_ == SanitizationMode::AnyASCII && !replacement.empty()) {
           result.append(replacement);
-        } else if (mode_ == SanitizationMode::DetectOnly) {
+        } else {
+          // No replacement or DetectOnly mode - pass through original
           result += static_cast<char>(c);
         }
       } else if (c >= 0xA0 && c <= 0xFF) {
@@ -401,12 +402,11 @@ std::string TextSanitizer::Sanitize(std::string_view input) const {
         } else {
           // Try to transliterate
           auto it = kTransliterationTable.find(c);
-          if (it != kTransliterationTable.end()) {
-            if (mode_ == SanitizationMode::AnyASCII) {
-              result.append(it->second);
-            }
-          } else if (mode_ == SanitizationMode::AnyASCII) {
-            // No mapping found - pass through unchanged
+          if (it != kTransliterationTable.end() &&
+              mode_ == SanitizationMode::AnyASCII) {
+            result.append(it->second);
+          } else {
+            // No mapping found or DetectOnly mode - pass through unchanged
             result += static_cast<char>(c);
           }
         }

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 # ---- Project Configuration ----
 set(PROJECT_NAME "Easy2Read")
-set(PROJECT_VERSION 1.2.2)
+set(PROJECT_VERSION 1.2.3)
 
 # CommonLib NG CMake setup
 set(CMAKE_CXX_STANDARD 23)

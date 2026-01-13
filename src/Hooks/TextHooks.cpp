@@ -52,15 +52,11 @@ void TextHooks::GetDescriptionHook::thunk(RE::TESDescription *a_desc,
   // Call original function first
   func(a_desc, a_out, a_parent, a_chunkID);
 
-  // Skip if no parent form
-  if (!a_parent) {
-    return;
-  }
-
   // In safe mode, only process Book forms to avoid crashes with other types
-  // (this naturally excludes MESG, Race, and other problematic form types)
+  // But if parent is null, we can't check form type - still process since book
+  // text often has null parent
   auto *settings = Settings::GetSingleton();
-  if (settings->sanitizationSafeMode) {
+  if (settings->sanitizationSafeMode && a_parent) {
     if (a_parent->GetFormType() != RE::FormType::Book) {
       return;
     }
@@ -69,17 +65,11 @@ void TextHooks::GetDescriptionHook::thunk(RE::TESDescription *a_desc,
   // Sanitize the output
   auto *sanitizer = TextSanitizer::GetSingleton();
   if (sanitizer->IsEnabled() && a_out.length() > 0) {
-    std::string original(a_out.c_str());
     std::string sanitized = sanitizer->Sanitize(a_out.c_str());
-
-    SKSE::log::info("TextHooks: Form {:08X} - Original len={}, Sanitized "
-                    "len={}, Changed={}",
-                    a_parent->GetFormID(), original.length(),
-                    sanitized.length(), (sanitized != original) ? "yes" : "no");
-
-    if (sanitized != original) {
+    if (sanitized != a_out.c_str()) {
       a_out = sanitized;
-      SKSE::log::info("TextHooks: Assigned sanitized text to a_out");
+      SKSE::log::debug("TextHooks: Sanitized DESC for form {:08X}",
+                       a_parent ? a_parent->GetFormID() : 0);
     }
   }
 }

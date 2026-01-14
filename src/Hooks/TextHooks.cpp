@@ -1,6 +1,7 @@
 #include "TextHooks.h"
 #include "PCH.h"
 #include "TextSanitization/TextSanitizer.h"
+#include <MinHook.h>
 #include <xbyak/xbyak.h>
 
 // Hook helper functions (pattern from Dynamic String Distributor)
@@ -13,6 +14,8 @@ void write_thunk_call(std::uintptr_t a_src) {
   T::func = trampoline.write_call<size>(a_src, T::thunk);
 }
 
+// Keep prologue hook for non-conflicting uses (other hooks that don't conflict
+// with DSD)
 template <class T, std::size_t BYTES>
 void hook_function_prologue(std::uintptr_t a_src) {
   struct Patch : Xbyak::CodeGenerator {
@@ -41,15 +44,26 @@ void hook_function_prologue(std::uintptr_t a_src) {
 
 namespace Easy2Read {
 
+// MinHook initialization flag
+static bool g_minHookInitialized = false;
+
 // ============================================================================
 // GetDescriptionHook - DESC/CNAM records (books, items, spells, etc.)
+// Uses MinHook for compatibility with Dynamic String Distributor
 // ============================================================================
-void TextHooks::GetDescriptionHook::thunk(RE::TESDescription *a_desc,
-                                          RE::BSString &a_out,
-                                          const RE::TESForm *a_parent,
-                                          std::uint32_t a_chunkID) {
-  // Call original function first
-  func(a_desc, a_out, a_parent, a_chunkID);
+
+// Original function pointer (set by MinHook)
+using GetDescriptionFunc = void (*)(RE::TESDescription *, RE::BSString &,
+                                    RE::TESForm *, std::uint32_t);
+static GetDescriptionFunc g_originalGetDescription = nullptr;
+
+// Our hook function
+void GetDescriptionDetour(RE::TESDescription *a_desc, RE::BSString &a_out,
+                          RE::TESForm *a_parent, std::uint32_t a_chunkID) {
+  // Call the original (or next hook in chain if DSD is installed)
+  if (g_originalGetDescription) {
+    g_originalGetDescription(a_desc, a_out, a_parent, a_chunkID);
+  }
 
   // Skip MESG (Message) records - they cause crashes during sanitization
   if (a_parent && a_parent->GetFormType() == RE::FormType::Message) {
@@ -69,12 +83,40 @@ void TextHooks::GetDescriptionHook::thunk(RE::TESDescription *a_desc,
 }
 
 void TextHooks::GetDescriptionHook::Install() {
-  // Hook TESDescription::GetDescription
-  // SE: 14401, AE: 14552, VR: 0x1A0300
+  // Initialize MinHook if not already done
+  if (!g_minHookInitialized) {
+    if (MH_Initialize() != MH_OK) {
+      SKSE::log::error("TextHooks: Failed to initialize MinHook");
+      return;
+    }
+    g_minHookInitialized = true;
+  }
+
+  // Get the target address
   REL::Relocation<std::uintptr_t> target{
       REL::VariantID(14401, 14552, 0x1A0300)};
-  stl::hook_function_prologue<GetDescriptionHook, 6>(target.address());
-  SKSE::log::info("TextHooks: GetDescriptionHook installed");
+
+  // Create the hook with MinHook
+  MH_STATUS status =
+      MH_CreateHook(reinterpret_cast<void *>(target.address()),
+                    reinterpret_cast<void *>(&GetDescriptionDetour),
+                    reinterpret_cast<void **>(&g_originalGetDescription));
+
+  if (status != MH_OK) {
+    SKSE::log::error("TextHooks: Failed to create GetDescription hook: {}",
+                     static_cast<int>(status));
+    return;
+  }
+
+  // Enable the hook
+  status = MH_EnableHook(reinterpret_cast<void *>(target.address()));
+  if (status != MH_OK) {
+    SKSE::log::error("TextHooks: Failed to enable GetDescription hook: {}",
+                     static_cast<int>(status));
+    return;
+  }
+
+  SKSE::log::info("TextHooks: GetDescriptionHook installed via MinHook");
 }
 
 // ============================================================================

@@ -81,10 +81,13 @@ target_precompile_headers(${PROJECT_NAME}
         src/PCH.h
 )
 
-# ---- Link ImGui ----
+# ---- Link ImGui and MinHook ----
+find_package(minhook CONFIG REQUIRED)
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         imgui::imgui
+        minhook::minhook
         d3d11
         dxgi
 )

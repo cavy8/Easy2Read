@@ -2,6 +2,18 @@
 
 All notable changes to Easy2Read will be documented in this file.
 
+## [1.3.0] - 2026-01-13
+
+### Changed
+- **Compatibility Improvement**: Switched GetDescription hook from prologue hook to MinHook
+  - Resolves conflicts with Dynamic String Distributor and other text modification plugins
+  - MinHook creates proper trampoline chains allowing multiple plugins to hook the same function
+  - Other hooks remain as call-site hooks for maximum compatibility
+
+### Removed
+- **SafeMode setting**: Removed (was added in 1.2.3 but was unnecessary)
+  - Built from 1.2.2 codebase instead of 1.2.3
+
 ## [1.2.2] - 2026-01-12
 
 ### Fixed

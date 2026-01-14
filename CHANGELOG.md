@@ -14,6 +14,11 @@ All notable changes to Easy2Read will be documented in this file.
 - **SafeMode setting**: Removed (was added in 1.2.3 but was unnecessary)
   - Built from 1.2.2 codebase instead of 1.2.3
 
+## [1.2.3] - 2026-01-13
+
+### Added
+- **SafeMode setting**: Limits GetDescription hook to only process book descriptions
+
 ## [1.2.2] - 2026-01-12
 
 ### Fixed

@@ -16,7 +16,7 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
-                    "value": "D:/Skyrim - Dev/SKSE Dev/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                    "value": "D:/Skyrim - Dev/SKSE Dev/tools/BuildTools/VC/vcpkg/scripts/buildsystems/vcpkg.cmake"
                 },
                 "VCPKG_TARGET_TRIPLET": "x64-windows-static"
             }
@@ -31,7 +31,7 @@
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
-                    "value": "D:/Skyrim - Dev/SKSE Dev/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                    "value": "D:/Skyrim - Dev/SKSE Dev/tools/BuildTools/VC/vcpkg/scripts/buildsystems/vcpkg.cmake"
                 },
                 "VCPKG_TARGET_TRIPLET": "x64-windows-static"
             }

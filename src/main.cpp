@@ -1,6 +1,7 @@
 #include "Config/Settings.h"
 #include "Hooks/D3D11Hook.h"
 #include "Hooks/InputHandler.h"
+#include "Hooks/MenuControlsHook.h"
 #include "Hooks/MenuWatcher.h"
 #include "Hooks/TextHooks.h"
 #include "PCH.h"
@@ -84,6 +85,9 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
     // Register event handlers
     Easy2Read::MenuWatcher::GetSingleton()->Register();
     Easy2Read::InputHandler::GetSingleton()->Register();
+
+    // Install MenuControls hook to block inputs when overlay is visible
+    Easy2Read::MenuControlsHook::Install();
 
     // Install D3D11 hook and set up overlay render callback
     if (Easy2Read::D3D11Hook::GetSingleton()->Install()) {

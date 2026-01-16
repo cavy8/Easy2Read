@@ -1,8 +1,8 @@
 #include "MenuControlsHook.h"
+#include "Config/Settings.h"
 #include "MenuWatcher.h"
 #include "PCH.h"
 #include "UI/Overlay.h"
-
 
 namespace Easy2Read {
 
@@ -12,13 +12,14 @@ RE::BSEventNotifyControl MenuControlsHook::ProcessEvent_Hook(
 
   auto *overlay = Overlay::GetSingleton();
   auto *menuWatcher = MenuWatcher::GetSingleton();
+  auto *settings = Settings::GetSingleton();
 
   // Only block inputs when overlay is visible AND book menu is open
   bool shouldBlock = overlay && overlay->IsVisible() && menuWatcher &&
                      menuWatcher->IsBookMenuOpen();
 
   if (shouldBlock && a_event) {
-    // Iterate through the event chain and zero out inputs
+    // Iterate through the event chain and process/block inputs
     for (auto *event = *a_event; event; event = event->next) {
       if (!event) {
         continue;
@@ -26,16 +27,22 @@ RE::BSEventNotifyControl MenuControlsHook::ProcessEvent_Hook(
 
       const auto eventType = event->GetEventType();
 
-      // Block mouse movement (prevents camera rotation)
-      if (eventType == RE::INPUT_EVENT_TYPE::kMouseMove) {
-        auto *mouseMove = static_cast<RE::MouseMoveEvent *>(event);
-        mouseMove->mouseInputX = 0;
-        mouseMove->mouseInputY = 0;
-      }
-
-      // Block thumbstick input (prevents controller camera movement)
+      // Handle thumbstick: capture for scrolling, then zero to block game
       if (eventType == RE::INPUT_EVENT_TYPE::kThumbstick) {
         auto *thumbstick = static_cast<RE::ThumbstickEvent *>(event);
+
+        // Right thumbstick (ID 1) is used for scrolling the overlay
+        if (thumbstick->IsRight()) {
+          float yAxis = thumbstick->yValue;
+          // Apply deadzone and send to overlay for scrolling
+          if (std::abs(yAxis) > 0.2f) {
+            float scrollDelta =
+                yAxis * settings->controllerScrollSpeed * 0.016f;
+            overlay->AddScrollInput(scrollDelta);
+          }
+        }
+
+        // Zero out both thumbsticks to prevent game from using them
         thumbstick->xValue = 0.0f;
         thumbstick->yValue = 0.0f;
       }

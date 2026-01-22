@@ -100,3 +100,4 @@ packages/
 # User-specific files (keep INI template but ignore user modifications)
 # Uncomment the line below if you want to ignore user-modified INI files:
 # Data/SKSE/Plugins/Easy2Read.ini
+.agent

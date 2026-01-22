@@ -168,17 +168,42 @@ void Settings::LoadTheme() {
       static_cast<float>(ini.GetDoubleValue("Window", "WidthPercent", 50.0));
   windowHeightPercent =
       static_cast<float>(ini.GetDoubleValue("Window", "HeightPercent", 70.0));
-  windowOpacity =
-      static_cast<float>(ini.GetLongValue("Window", "Opacity", 90)) / 100.0f;
   windowRounding =
       static_cast<float>(ini.GetDoubleValue("Window", "Rounding", 8.0));
   windowPadding =
       static_cast<float>(ini.GetDoubleValue("Window", "Padding", 12.0));
 
+  // [Visibility]
+  showTitle = ini.GetBoolValue("Visibility", "ShowTitle", true);
+  showSeparator = ini.GetBoolValue("Visibility", "ShowSeparator", true);
+  showBorder = ini.GetBoolValue("Visibility", "ShowBorder", true);
+  showScrollbarTrack =
+      ini.GetBoolValue("Visibility", "ShowScrollbarTrack", true);
+
+  // [Transparency]
+  windowAlpha =
+      static_cast<float>(ini.GetLongValue("Transparency", "WindowAlpha", 90)) /
+      100.0f;
+  borderAlpha =
+      static_cast<float>(ini.GetLongValue("Transparency", "BorderAlpha", 100)) /
+      100.0f;
+  separatorAlpha = static_cast<float>(ini.GetLongValue("Transparency",
+                                                       "SeparatorAlpha", 100)) /
+                   100.0f;
+  scrollbarTrackAlpha = static_cast<float>(ini.GetLongValue(
+                            "Transparency", "ScrollbarTrackAlpha", 100)) /
+                        100.0f;
+  scrollbarThumbAlpha = static_cast<float>(ini.GetLongValue(
+                            "Transparency", "ScrollbarThumbAlpha", 100)) /
+                        100.0f;
+
   SKSE::log::info("  FontPreset: {}, FontSize: {}, TitleScale: {}",
                   fontPresetStr, fontSize, titleScale);
-  SKSE::log::info("  WindowSize: {}%x{}%, Opacity: {:.0f}%", windowWidthPercent,
-                  windowHeightPercent, windowOpacity * 100);
+  SKSE::log::info("  WindowSize: {}%x{}%, WindowAlpha: {:.0f}%",
+                  windowWidthPercent, windowHeightPercent, windowAlpha * 100);
+  SKSE::log::info(
+      "  Visibility: Title={}, Separator={}, Border={}, ScrollbarTrack={}",
+      showTitle, showSeparator, showBorder, showScrollbarTrack);
 }
 
 std::string Settings::GetFontPath() const {

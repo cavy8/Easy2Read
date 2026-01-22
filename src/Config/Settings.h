@@ -43,7 +43,6 @@ public:
   // ---- Window (percentage of screen size, 0-100) ----
   float windowWidthPercent = 50.0f;  // 50% of screen width
   float windowHeightPercent = 70.0f; // 70% of screen height
-  float windowOpacity = 0.90f;       // 0-1
   float windowRounding = 8.0f;       // Corner rounding in pixels
   float windowPadding = 12.0f;       // Padding inside window
 
@@ -93,6 +92,19 @@ public:
   float scrollbarSize = 14.0f;    // Width of scrollbar
   float scrollbarRounding = 4.0f; // Rounding of scrollbar corners
   float scrollSpeed = 50.0f;      // Pixels per scroll wheel tick
+
+  // ---- Visibility Toggles ----
+  bool showTitle = true;          // Show book title
+  bool showSeparator = true;      // Show separator line under title
+  bool showBorder = true;         // Show window border
+  bool showScrollbarTrack = true; // Show scrollbar background track
+
+  // ---- Per-Element Transparency (0-1) ----
+  float windowAlpha = 0.90f;        // Window background transparency
+  float borderAlpha = 1.0f;         // Border transparency
+  float separatorAlpha = 1.0f;      // Separator line transparency
+  float scrollbarTrackAlpha = 1.0f; // Scrollbar background transparency
+  float scrollbarThumbAlpha = 1.0f; // Scrollbar thumb transparency
 
   // ---- Text Sanitization ----
   bool sanitizationEnabled = true;

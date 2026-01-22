@@ -81,7 +81,7 @@ void Overlay::RenderWindow() {
   ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Always);
 
   // Configure all style settings from theme
-  float opacity = settings->windowOpacity;
+  float opacity = settings->windowAlpha;
 
   // Window colors
   ImVec4 bgColor(settings->windowColorR / 255.0f,
@@ -91,26 +91,30 @@ void Overlay::RenderWindow() {
                       settings->windowColorG / 255.0f * 0.8f,
                       settings->windowColorB / 255.0f * 0.8f, opacity);
 
-  // Border color
+  // Border color (with per-element alpha)
   ImVec4 borderColor(settings->borderColorR / 255.0f,
                      settings->borderColorG / 255.0f,
-                     settings->borderColorB / 255.0f, opacity);
+                     settings->borderColorB / 255.0f,
+                     settings->showBorder ? settings->borderAlpha : 0.0f);
 
-  // Separator color
-  ImVec4 separatorColor(settings->separatorColorR / 255.0f,
-                        settings->separatorColorG / 255.0f,
-                        settings->separatorColorB / 255.0f, 1.0f);
+  // Separator color (with per-element alpha)
+  ImVec4 separatorColor(
+      settings->separatorColorR / 255.0f, settings->separatorColorG / 255.0f,
+      settings->separatorColorB / 255.0f, settings->separatorAlpha);
 
-  // Scrollbar colors
-  ImVec4 scrollbarBgColor(settings->scrollbarBgColorR / 255.0f,
-                          settings->scrollbarBgColorG / 255.0f,
-                          settings->scrollbarBgColorB / 255.0f, 1.0f);
-  ImVec4 scrollbarColor(settings->scrollbarColorR / 255.0f,
-                        settings->scrollbarColorG / 255.0f,
-                        settings->scrollbarColorB / 255.0f, 1.0f);
+  // Scrollbar colors (with per-element alpha)
+  ImVec4 scrollbarBgColor(
+      settings->scrollbarBgColorR / 255.0f,
+      settings->scrollbarBgColorG / 255.0f,
+      settings->scrollbarBgColorB / 255.0f,
+      settings->showScrollbarTrack ? settings->scrollbarTrackAlpha : 0.0f);
+  ImVec4 scrollbarColor(
+      settings->scrollbarColorR / 255.0f, settings->scrollbarColorG / 255.0f,
+      settings->scrollbarColorB / 255.0f, settings->scrollbarThumbAlpha);
   ImVec4 scrollbarHoverColor(settings->scrollbarHoverColorR / 255.0f,
                              settings->scrollbarHoverColorG / 255.0f,
-                             settings->scrollbarHoverColorB / 255.0f, 1.0f);
+                             settings->scrollbarHoverColorB / 255.0f,
+                             settings->scrollbarThumbAlpha);
 
   // Push all colors
   ImGui::PushStyleColor(ImGuiCol_WindowBg, bgColor);
@@ -127,7 +131,8 @@ void Overlay::RenderWindow() {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->windowRounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
                       ImVec2(settings->windowPadding, settings->windowPadding));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, settings->borderSize);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize,
+                      settings->showBorder ? settings->borderSize : 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, settings->scrollbarSize);
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding,
                       settings->scrollbarRounding);
@@ -143,24 +148,28 @@ void Overlay::RenderWindow() {
   }
 
   if (ImGui::Begin("###Easy2ReadOverlay", nullptr, flags)) {
-    // Title with custom color and scale
-    ImVec4 titleColor(settings->titleColorR / 255.0f,
-                      settings->titleColorG / 255.0f,
-                      settings->titleColorB / 255.0f, 1.0f);
+    // Title section (conditionally rendered)
+    if (settings->showTitle) {
+      ImVec4 titleColor(settings->titleColorR / 255.0f,
+                        settings->titleColorG / 255.0f,
+                        settings->titleColorB / 255.0f, 1.0f);
 
-    // Draw title with scaled font
-    ImGui::PushStyleColor(ImGuiCol_Text, titleColor);
-    float originalScale = ImGui::GetFont()->Scale;
-    ImGui::GetFont()->Scale *= settings->titleScale;
-    ImGui::PushFont(ImGui::GetFont());
-    ImGui::TextWrapped("%s", bookTitle.c_str());
-    ImGui::PopFont();
-    ImGui::GetFont()->Scale = originalScale;
-    ImGui::PopStyleColor();
+      // Draw title with scaled font
+      ImGui::PushStyleColor(ImGuiCol_Text, titleColor);
+      float originalScale = ImGui::GetFont()->Scale;
+      ImGui::GetFont()->Scale *= settings->titleScale;
+      ImGui::PushFont(ImGui::GetFont());
+      ImGui::TextWrapped("%s", bookTitle.c_str());
+      ImGui::PopFont();
+      ImGui::GetFont()->Scale = originalScale;
+      ImGui::PopStyleColor();
 
-    // Separator under title
-    ImGui::Separator();
-    ImGui::Spacing();
+      // Separator under title (conditionally rendered)
+      if (settings->showSeparator) {
+        ImGui::Separator();
+      }
+      ImGui::Spacing();
+    }
 
     // Body text color
     ImVec4 bodyColor(settings->bodyColorR / 255.0f,

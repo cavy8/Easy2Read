@@ -49,6 +49,9 @@ private:
   // Accumulated scroll input from InputHandler
   float pendingScrollDelta = 0.0f;
 
+  // Reset scroll position on next frame
+  bool resetScrollOnNextFrame = false;
+
   // ImGui font pointer
   ImFont *customFont = nullptr;
 };

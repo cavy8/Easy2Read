@@ -181,6 +181,12 @@ void Overlay::RenderWindow() {
     ImGui::BeginChild("BookTextScroll", ImVec2(0, 0), false,
                       ImGuiWindowFlags_None);
 
+    // Reset scroll to top when overlay was just opened
+    if (resetScrollOnNextFrame) {
+      ImGui::SetScrollY(0.0f);
+      resetScrollOnNextFrame = false;
+    }
+
     // Apply any pending scroll input directly (bypasses mouse position check)
     if (pendingScrollDelta != 0.0f) {
       float currentScroll = ImGui::GetScrollY();
@@ -222,6 +228,7 @@ void Overlay::ClearContent() {
 void Overlay::Show() {
   if (!visible) {
     visible = true;
+    resetScrollOnNextFrame = true;
     SKSE::log::info("Overlay shown");
   }
 }

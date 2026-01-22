@@ -2,6 +2,39 @@
 
 All notable changes to Easy2Read will be documented in this file.
 
+## [1.4.0] - 2026-01-21
+
+### Added
+- **Quest Alias Support**: `<Alias=...>` tags in book text are now resolved to actual names
+  - Finds the quest that owns the book and resolves aliases from that quest
+  - Reference aliases (NPCs, objects, locations) are fully supported
+  - Location aliases (`BGSLocAlias`) are not yet supported due to CommonLibSSE-NG limitations
+- **Enhanced Theme Customization**:
+  - **Visibility Toggles** (new `[Visibility]` section in `Easy2Read_Theme.ini`):
+    - `ShowTitle` - Toggle book title display
+    - `ShowSeparator` - Toggle separator line under title
+    - `ShowBorder` - Toggle window border
+    - `ShowScrollbarTrack` - Toggle scrollbar background
+  - **Per-Element Transparency** (new `[Transparency]` section):
+    - `WindowAlpha` - Window background transparency (0-100)
+    - `BorderAlpha` - Border transparency (0-100)
+    - `SeparatorAlpha` - Separator line transparency (0-100)
+    - `ScrollbarTrackAlpha` - Scrollbar track transparency (0-100)
+    - `ScrollbarThumbAlpha` - Scrollbar thumb transparency (0-100)
+    - Text always remains fully opaque for readability
+- **Input Blocking**: Mouse and controller input is now blocked for the book menu while overlay is open
+  - Prevents accidental page turning and camera movement
+  - Uses MenuControls hook similar to Loading Screen Locker
+
+### Changed
+- Removed global `Opacity` setting from `[Window]` section (replaced by `WindowAlpha`)
+- Alias resolution now happens before markup stripping to preserve tags
+
+### Technical Details
+- New `AliasResolver` component for quest alias resolution
+- Iterates all quests to find book ownership via reference aliases
+- Uses regex pattern matching for `<Alias=...>` tag detection
+
 ## [1.3.0] - 2026-01-13
 
 ### Changed

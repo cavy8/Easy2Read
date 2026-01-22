@@ -2,6 +2,16 @@
 
 All notable changes to Easy2Read will be documented in this file.
 
+## [1.4.1] - 2026-01-22
+
+### Added
+- **Text Cleanup**: Automatic removal of redundant formatting in book text
+  - Duplicate title removal: If the first line of body text matches the book title, it's automatically removed
+  - "by" pattern cleanup: Removes extra blank lines around standalone "by" author lines
+
+### Changed
+- **Scroll Position**: Overlay now always scrolls to the top when reopened
+
 ## [1.4.0] - 2026-01-21
 
 ### Added

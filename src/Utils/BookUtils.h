@@ -28,6 +28,13 @@ private:
 
   // Strip [pagebreak] markers
   static std::string StripPagebreaks(const std::string &text);
+
+  // Remove first line if it matches the title (case-insensitive)
+  static std::string RemoveDuplicateTitle(const std::string &text,
+                                          const std::string &title);
+
+  // Remove blank lines around standalone "by" line
+  static std::string CleanByPattern(const std::string &text);
 };
 
 } // namespace Easy2Read

@@ -46,6 +46,15 @@ std::string BookUtils::GetBookText(RE::TESObjectBOOK *book) {
   cleanText = StripPagebreaks(cleanText);
   cleanText = NormalizeWhitespace(cleanText);
 
+  // Get title for duplicate removal
+  std::string title = GetBookTitle(book);
+
+  // Remove first line if it matches the title
+  cleanText = RemoveDuplicateTitle(cleanText, title);
+
+  // Clean up "by" author pattern (blank line, "by", blank line -> "by")
+  cleanText = CleanByPattern(cleanText);
+
   // Debug: log clean text length
   SKSE::log::info("BookUtils: Clean text length: {} bytes", cleanText.size());
 
@@ -279,6 +288,101 @@ bool BookUtils::IsNote(RE::TESObjectBOOK *book) {
 
   // Notes have the kNote flag set in their data
   return book->IsNote();
+}
+
+std::string BookUtils::RemoveDuplicateTitle(const std::string &text,
+                                            const std::string &title) {
+  if (title.empty() || text.empty()) {
+    return text;
+  }
+
+  // Find the first line of the body text
+  size_t firstNewline = text.find('\n');
+  std::string firstLine;
+  if (firstNewline != std::string::npos) {
+    firstLine = text.substr(0, firstNewline);
+  } else {
+    firstLine = text;
+  }
+
+  // Trim whitespace from first line for comparison
+  size_t start = firstLine.find_first_not_of(" \t\r\n");
+  size_t end = firstLine.find_last_not_of(" \t\r\n");
+  if (start != std::string::npos && end != std::string::npos) {
+    firstLine = firstLine.substr(start, end - start + 1);
+  }
+
+  // Trim whitespace from title for comparison
+  std::string trimmedTitle = title;
+  start = trimmedTitle.find_first_not_of(" \t\r\n");
+  end = trimmedTitle.find_last_not_of(" \t\r\n");
+  if (start != std::string::npos && end != std::string::npos) {
+    trimmedTitle = trimmedTitle.substr(start, end - start + 1);
+  }
+
+  // Case-insensitive comparison
+  auto toLower = [](std::string s) {
+    for (char &c : s) {
+      if (c >= 'A' && c <= 'Z') {
+        c = c - 'A' + 'a';
+      }
+    }
+    return s;
+  };
+
+  if (toLower(firstLine) == toLower(trimmedTitle)) {
+    // Remove the first line (including the newline)
+    if (firstNewline != std::string::npos) {
+      std::string result = text.substr(firstNewline + 1);
+      // Trim leading whitespace from result
+      size_t resultStart = result.find_first_not_of(" \t\r\n");
+      if (resultStart != std::string::npos && resultStart > 0) {
+        result = result.substr(resultStart);
+      }
+      SKSE::log::debug("BookUtils: Removed duplicate title from body");
+      return result;
+    }
+    // The entire text was just the title
+    return "";
+  }
+
+  return text;
+}
+
+std::string BookUtils::CleanByPattern(const std::string &text) {
+  std::string result = text;
+
+  // Pattern: "\n\nby\n\n" or at start "by\n\n"
+  // We want to remove the surrounding blank lines, keeping just "by\n"
+
+  // Handle pattern in middle of text: "\n\nby\n\n" -> "\nby\n"
+  const std::string pattern1 = "\n\nby\n\n";
+  const std::string replacement1 = "\nby\n";
+  size_t pos;
+  while ((pos = result.find(pattern1)) != std::string::npos) {
+    result.replace(pos, pattern1.length(), replacement1);
+    SKSE::log::debug("BookUtils: Cleaned 'by' pattern (middle)");
+  }
+
+  // Handle pattern at start: "by\n\n" when it's the first line
+  if (result.length() >= 4 && result.substr(0, 4) == "by\n\n") {
+    result = "by\n" + result.substr(4);
+    SKSE::log::debug("BookUtils: Cleaned 'by' pattern (start)");
+  }
+
+  // Handle case-insensitive "By" as well
+  const std::string pattern2 = "\n\nBy\n\n";
+  while ((pos = result.find(pattern2)) != std::string::npos) {
+    result.replace(pos, pattern2.length(), "\nBy\n");
+    SKSE::log::debug("BookUtils: Cleaned 'By' pattern (middle)");
+  }
+
+  if (result.length() >= 4 && result.substr(0, 4) == "By\n\n") {
+    result = "By\n" + result.substr(4);
+    SKSE::log::debug("BookUtils: Cleaned 'By' pattern (start)");
+  }
+
+  return result;
 }
 
 } // namespace Easy2Read

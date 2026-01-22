@@ -35,6 +35,7 @@ set(SOURCES
     src/Hooks/MenuControlsHook.cpp
     src/Utils/BookUtils.cpp
     src/Utils/ImageMappings.cpp
+    src/Utils/AliasResolver.cpp
     src/TextSanitization/TextSanitizer.cpp
     src/UI/Overlay.cpp
     src/ImGui/imgui_impl_dx11.cpp
@@ -51,6 +52,7 @@ set(HEADERS
     src/Hooks/MenuControlsHook.h
     src/Utils/BookUtils.h
     src/Utils/ImageMappings.h
+    src/Utils/AliasResolver.h
     src/TextSanitization/TextSanitizer.h
     src/UI/Overlay.h
     src/ImGui/imgui_impl_dx11.h

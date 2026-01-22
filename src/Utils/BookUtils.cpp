@@ -1,4 +1,5 @@
 #include "BookUtils.h"
+#include "AliasResolver.h"
 #include "ImageMappings.h"
 #include "PCH.h"
 #include "TextSanitization/TextSanitizer.h"
@@ -34,6 +35,11 @@ std::string BookUtils::GetBookText(RE::TESObjectBOOK *book) {
 
   // Debug: log raw text length
   SKSE::log::info("BookUtils: Raw text length: {} bytes", rawText.size());
+
+  // Resolve quest aliases (<Alias=...> tags) BEFORE stripping markup
+  // Otherwise StripMarkup removes the alias tags before they can be resolved
+  auto *aliasResolver = AliasResolver::GetSingleton();
+  rawText = aliasResolver->ResolveAliases(rawText, book);
 
   // Strip markup and normalize whitespace
   std::string cleanText = StripMarkup(rawText);

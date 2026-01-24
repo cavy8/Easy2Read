@@ -89,6 +89,10 @@ void Settings::LoadTheme() {
   titleScale =
       static_cast<float>(ini.GetDoubleValue("Font", "TitleScale", 1.2));
 
+  const char *langSupportStr =
+      ini.GetValue("Font", "LanguageSupport", "European");
+  languageSupport = ParseLanguageSupport(langSupportStr);
+
   // [Colors] - Title
   titleColorR =
       static_cast<std::uint8_t>(ini.GetLongValue("Colors", "TitleColorR", 255));
@@ -197,8 +201,10 @@ void Settings::LoadTheme() {
                             "Transparency", "ScrollbarThumbAlpha", 100)) /
                         100.0f;
 
-  SKSE::log::info("  FontPreset: {}, FontSize: {}, TitleScale: {}",
-                  fontPresetStr, fontSize, titleScale);
+  SKSE::log::info(
+      "  FontPreset: {}, FontSize: {}, TitleScale: {}, LanguageSupport: {}",
+      fontPresetStr, fontSize, titleScale,
+      ini.GetValue("Font", "LanguageSupport", "European"));
   SKSE::log::info("  WindowSize: {}%x{}%, WindowAlpha: {:.0f}%",
                   windowWidthPercent, windowHeightPercent, windowAlpha * 100);
   SKSE::log::info(
@@ -232,6 +238,21 @@ FontPreset Settings::ParseFontPreset(const std::string &str) {
     return FontPreset::ImGuiDefault;
   }
   return FontPreset::Sovngarde; // Default to Sovngarde
+}
+
+LanguageSupport Settings::ParseLanguageSupport(const std::string &str) {
+  if (str == "latin" || str == "Latin" || str == "LATIN") {
+    return LanguageSupport::Latin;
+  } else if (str == "european" || str == "European" || str == "EUROPEAN") {
+    return LanguageSupport::European;
+  } else if (str == "asian" || str == "Asian" || str == "ASIAN" ||
+             str == "cjk" || str == "CJK") {
+    return LanguageSupport::Asian;
+  } else if (str == "full" || str == "Full" || str == "FULL" || str == "all" ||
+             str == "All" || str == "ALL") {
+    return LanguageSupport::Full;
+  }
+  return LanguageSupport::European; // Default to European
 }
 
 } // namespace Easy2Read

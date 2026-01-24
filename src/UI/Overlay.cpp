@@ -20,17 +20,98 @@ void Overlay::LoadFont() {
 
   ImGuiIO &io = ImGui::GetIO();
 
+  // Build glyph ranges based on configured language support level
+  // Using static to cache the built ranges (rebuilt if setting changes)
+  static ImVector<ImWchar> glyphRanges;
+  static LanguageSupport lastLanguageSupport = LanguageSupport::Latin;
+
+  if (glyphRanges.empty() || lastLanguageSupport != settings->languageSupport) {
+    glyphRanges.clear();
+    lastLanguageSupport = settings->languageSupport;
+
+    ImFontGlyphRangesBuilder builder;
+
+    // Always include basic Latin
+    builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
+
+    // Additional ranges based on language support level
+    switch (settings->languageSupport) {
+    case LanguageSupport::Full:
+      // Full: Everything including full CJK
+      builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull());
+      builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
+      builder.AddRanges(io.Fonts->GetGlyphRangesKorean());
+      builder.AddRanges(io.Fonts->GetGlyphRangesThai());
+      builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese());
+      [[fallthrough]];
+
+    case LanguageSupport::Asian:
+      // Asian: Common CJK characters (smaller than full)
+      if (settings->languageSupport == LanguageSupport::Asian) {
+        builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+        builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
+        builder.AddRanges(io.Fonts->GetGlyphRangesKorean());
+      }
+      [[fallthrough]];
+
+    case LanguageSupport::European:
+      // European: Cyrillic, Greek, extended Latin
+      builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
+      builder.AddRanges(io.Fonts->GetGlyphRangesGreek());
+      {
+        // Extended Latin ranges for European languages
+        static const ImWchar europeanRanges[] = {
+            0x0100, 0x017F, // Latin Extended-A (Central/Eastern European)
+            0x0180, 0x024F, // Latin Extended-B
+            0x1E00, 0x1EFF, // Latin Extended Additional
+            0,
+        };
+        builder.AddRanges(europeanRanges);
+      }
+      [[fallthrough]];
+
+    case LanguageSupport::Latin:
+    default:
+      // Latin: Just basic punctuation and symbols
+      {
+        static const ImWchar latinRanges[] = {
+            0x2000, 0x206F, // General Punctuation
+            0x20A0, 0x20CF, // Currency Symbols
+            0,
+        };
+        builder.AddRanges(latinRanges);
+      }
+      break;
+    }
+
+    builder.BuildRanges(&glyphRanges);
+
+    const char *levelName = "Latin";
+    if (settings->languageSupport == LanguageSupport::European)
+      levelName = "European";
+    else if (settings->languageSupport == LanguageSupport::Asian)
+      levelName = "Asian";
+    else if (settings->languageSupport == LanguageSupport::Full)
+      levelName = "Full";
+
+    SKSE::log::info("Built {} Unicode glyph ranges for font loading",
+                    levelName);
+  }
+
   // Try to load the configured font
   std::string fontPath = settings->GetFontPath();
 
   // Only try to load if path is not empty (empty = use default)
   if (!fontPath.empty() && std::filesystem::exists(fontPath)) {
-    customFont =
-        io.Fonts->AddFontFromFileTTF(fontPath.c_str(), settings->fontSize);
+    ImFontConfig config;
+    config.GlyphRanges = glyphRanges.Data;
+    customFont = io.Fonts->AddFontFromFileTTF(fontPath.c_str(),
+                                              settings->fontSize, &config);
 
     if (customFont) {
-      SKSE::log::info("Loaded custom font: {} (size: {})", fontPath,
-                      settings->fontSize);
+      SKSE::log::info(
+          "Loaded custom font with full Unicode support: {} (size: {})",
+          fontPath, settings->fontSize);
       fontLoaded = true;
     } else {
       SKSE::log::warn("Failed to load font: {}", fontPath);
@@ -43,6 +124,8 @@ void Overlay::LoadFont() {
   if (!customFont) {
     SKSE::log::info("Using ImGui default font (size: {})", settings->fontSize);
     // Load default font at configured size
+    // Note: Default font only supports basic Latin - use a custom font for full
+    // Unicode
     ImFontConfig config;
     config.SizePixels = settings->fontSize;
     customFont = io.Fonts->AddFontDefault(&config);

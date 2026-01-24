@@ -12,6 +12,15 @@ enum class FontPreset {
   Custom        // User-specified font file
 };
 
+enum class LanguageSupport {
+  Latin,    // Basic Latin only (~0.5 MB) - English, basic Western European
+  European, // Latin + Cyrillic + Greek (~2-4 MB) - Full European language
+            // support
+  Asian, // European + CJK common (~10-20 MB) - Chinese/Japanese/Korean common
+         // chars
+  Full   // All available glyphs (~50-100 MB) - Maximum Unicode coverage
+};
+
 class Settings {
 public:
   [[nodiscard]] static Settings *GetSingleton();
@@ -24,6 +33,7 @@ public:
 
   // Convert string to FontPreset enum
   static FontPreset ParseFontPreset(const std::string &str);
+  static LanguageSupport ParseLanguageSupport(const std::string &str);
 
   // ---- Overlay ----
   bool overlayEnabled = true;   // Set to false to disable overlay entirely
@@ -39,6 +49,8 @@ public:
   float titleFontSize = 28.0f; // Title text size (0 = same as body)
   float titleScale =
       1.2f; // Scale multiplier for title (alternative to titleFontSize)
+  LanguageSupport languageSupport =
+      LanguageSupport::European; // Unicode glyph range coverage
 
   // ---- Window (percentage of screen size, 0-100) ----
   float windowWidthPercent = 50.0f;  // 50% of screen width

@@ -14,6 +14,9 @@ std::string BookUtils::GetBookTitle(RE::TESObjectBOOK *book) {
   const char *name = book->GetName();
   std::string title = name ? name : "";
 
+  auto *aliasResolver = AliasResolver::GetSingleton();
+  title = aliasResolver->ResolveAliases(title, book);
+
   // Apply text sanitization to title
   auto *sanitizer = TextSanitizer::GetSingleton();
   if (sanitizer->IsEnabled()) {

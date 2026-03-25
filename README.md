@@ -4,24 +4,10 @@ An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom ove
 
 ## Features
 
-### Book Overlay
-- **Customizable Overlay**: Display book text in a clean, readable overlay
-- **Font Options**: Choose from Sovngarde (Skyrim-themed), OpenDyslexic (accessibility), or custom fonts
-- **Full Theming**: Configure colors, opacity, scrollbar, borders, and more
-- **Scroll Wheel Support**: Scroll through long texts with your mouse wheel
-- **Hotkey Toggle**: Press a configurable key to show/hide the overlay while reading
+When reading a book/note, press the F key (configurable) to pull up an overlay with the text. Theme support, multiple font options (including the OpenDyslexic font), and includes support for image descriptions/text replacement. By default, mappings are provided for vanilla and Scribes of Skyrim calligraphy. Certain aliases still don't convert to text properly and will simply be skipped over. If you have an idea on how to fix this, please reach out or submit a PR
 
 ### Tofu Remover (Text Sanitizer)
-Automatically replaces unsupported Unicode characters ("tofu" □) with readable ASCII equivalents:
-
-- **Books, Items, Spells** - DESC/CNAM records
-- **Dialogue Subtitles** - INFO NAM1 records
-- **Dialogue Menu Options** - DIAL FULL records  
-- **Quest Journal Descriptions** - QUST CNAM records
-- **Map Markers** - Detection only (REFR FULL)
-- **NPC Names** - Detection only (NPC FULL)
-
-> **Note**: Loading screen tips use a different system (Scaleform) that seems to crash when hooked the same way as the other text. As such, I've not implemented a hook for it. This is a known limitation at this time.
+Automatically replaces unsupported Unicode characters ("tofu" □) with readable ASCII equivalents in books, dialogue, and quest records. Map markers, NPC names, and loading screens are currently not supported. Loading screen tips use a different system that seems to crash when hooked the same way as the other text. As such, I've not implemented a hook for it. This is a known limitation at this time. If you have a solution for this, please reach out or submit a PR :)
 
 ## Installation
 
@@ -54,15 +40,6 @@ Enable = true           ; Master toggle for Tofu Remover
 Mode = On               ; On, DetectOnly, or Off
 DebugMode = false       ; Verbose logging for troubleshooting
 LogReplacements = false ; Log each character replacement
-
-[TextSanitization.Hooks]
-; Disable individual hooks if they cause issues
-EnableDescriptionHook = true    ; Books, items, spells
-EnableDialogueHook = true       ; Dialogue subtitles
-EnableDialogueMenuHook = true   ; Dialogue menu options
-EnableQuestHook = true          ; Quest journal
-EnableMapMarkerHook = true      ; Map markers (detect only)
-EnableNpcNameHook = true        ; NPC names (detect only)
 ```
 
 ### Easy2Read_Theme.ini
@@ -73,6 +50,11 @@ Customize the overlay appearance:
 - **[Colors]**: Title, body text, window, border, separator colors (RGB 0-255)
 - **[Scrollbar]**: Background, thumb, hover colors, size, rounding, scroll speed
 - **[Window]**: Size (% of screen), opacity, rounding, padding
+
+### Foreign Language Support
+
+- Supports English and some European languages by default.
+- To use with other languages, you must edit the Easy2Read_Theme.ini file and provide a custom font, and set the LanguageSupport value to reflect your desired language. Small memory impact if using "Full" - I recommend a more specialized preset if possible.
 
 ## Building from Source
 
@@ -104,14 +86,11 @@ The built DLL will be in `build-vs/Release/Easy2Read.dll`.
 - [ImGui](https://github.com/ocornut/imgui) - Overlay rendering
 - [SimpleIni](https://github.com/brofield/simpleini) - INI file parsing
 
-## Known Limitations
+## Future Plans
 
-1. **VR Untested**: Built to target VR but not tested. Please report if it works!
-2. **Loading Screens**: Cannot sanitize loading screen tips (Scaleform limitation)
-3. **Multi-page Books**: All text shown concatenated; page breaks not preserved
-4. **Dynamic Text**: Books with script-generated text may show base text in overlay.
-5. **Input Capturing**: Scroll wheel input still passes to underlying book menu
-6. **Map Markers/NPC Names**: Detection only - cannot modify these in-place at this time.
+- Fix loading screens if possible
+- Show the key to press for the overlay in the book UI
+- Better foreign language support
 
 ## License
 

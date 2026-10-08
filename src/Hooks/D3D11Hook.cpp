@@ -5,13 +5,20 @@
 #include "UI/Overlay.h"
 #include <imgui.h>
 
-// Forward declare message handler from imgui_impl_win32.cpp
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
-                                                             UINT msg,
-                                                             WPARAM wParam,
-                                                             LPARAM lParam);
-
 namespace Easy2Read {
+namespace {
+class ImGuiContextScope {
+public:
+  explicit ImGuiContextScope(ImGuiContext *current)
+      : previous(ImGui::GetCurrentContext()) {
+    ImGui::SetCurrentContext(current);
+  }
+  ~ImGuiContextScope() { ImGui::SetCurrentContext(previous); }
+
+private:
+  ImGuiContext *previous;
+};
+} // namespace
 
 D3D11Hook *D3D11Hook::GetSingleton() {
   static D3D11Hook singleton;
@@ -19,65 +26,49 @@ D3D11Hook *D3D11Hook::GetSingleton() {
 }
 
 bool D3D11Hook::Install() {
-  SKSE::log::info("Installing D3D11 hook...");
-
-  // Get the render window
-  auto renderWindow = RE::BSGraphics::Renderer::GetSingleton();
-  if (!renderWindow) {
-    SKSE::log::error("Failed to get BSGraphics::Renderer singleton");
-    return false;
+  if (initialized) {
+    return true;
   }
 
-  auto &renderData = renderWindow->GetRuntimeData();
-  auto swapChain = reinterpret_cast<IDXGISwapChain *>(
-      renderData.renderWindows[0].swapChain);
-  if (!swapChain) {
-    SKSE::log::error("Failed to get swap chain");
-    return false;
-  }
-
-  // Get the vtable of the swap chain
-  void **vtable = *reinterpret_cast<void ***>(swapChain);
-
-  // Present is at index 8 in the IDXGISwapChain vtable
-  void *presentAddr = vtable[8];
-
-  SKSE::log::info("SwapChain::Present at {:p}", presentAddr);
-
-  // Save original function pointer
-  originalPresent = reinterpret_cast<decltype(originalPresent)>(presentAddr);
-
-  // Patch the vtable directly
-  DWORD oldProtect;
-  if (!VirtualProtect(&vtable[8], sizeof(void *), PAGE_EXECUTE_READWRITE,
-                      &oldProtect)) {
-    SKSE::log::error("Failed to change vtable memory protection");
-    return false;
-  }
-
-  vtable[8] = reinterpret_cast<void *>(&HookedPresent);
-
-  VirtualProtect(&vtable[8], sizeof(void *), oldProtect, &oldProtect);
-
+  // Draw after the book, while CS's UI buffer is still the framebuffer.
+  // Present can target the scene buffer and runs too late to join the UI layer.
+  REL::Relocation<std::uintptr_t> vtable(RE::VTABLE_BookMenu[0]);
+  originalPostDisplay = vtable.write_vfunc(0x6, HookedPostDisplay);
   initialized = true;
-  SKSE::log::info("D3D11 hook installed successfully");
+  SKSE::log::info("D3D11 hook installed at BookMenu::PostDisplay");
   return true;
 }
 
 void D3D11Hook::Uninstall() {
+  if (initialized) {
+    REL::Relocation<std::uintptr_t> vtable(RE::VTABLE_BookMenu[0]);
+    auto current = *reinterpret_cast<std::uintptr_t *>(
+        vtable.address() + 0x6 * sizeof(void *));
+    if (current == reinterpret_cast<std::uintptr_t>(&HookedPostDisplay)) {
+      vtable.write_vfunc(0x6, originalPostDisplay.address());
+    }
+    initialized = false;
+  }
+
   if (imguiInitialized) {
+    if (ImGui::GetCurrentContext() == imguiContext) {
+      ImGui::SetCurrentContext(nullptr);
+    }
+    ImGuiContextScope scope(imguiContext);
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
+    ImGui::DestroyContext(imguiContext);
+    imguiContext = nullptr;
     imguiInitialized = false;
   }
-
-  if (renderTargetView) {
-    renderTargetView->Release();
-    renderTargetView = nullptr;
+  if (context) {
+    context->Release();
+    context = nullptr;
   }
-
-  initialized = false;
+  if (device) {
+    device->Release();
+    device = nullptr;
+  }
   SKSE::log::info("D3D11 hook uninstalled");
 }
 
@@ -85,153 +76,108 @@ void D3D11Hook::SetRenderCallback(RenderCallback callback) {
   renderCallback = std::move(callback);
 }
 
-HRESULT WINAPI D3D11Hook::HookedPresent(IDXGISwapChain *pSwapChain,
-                                        UINT SyncInterval, UINT Flags) {
+void D3D11Hook::HookedPostDisplay(RE::BookMenu *menu) {
+  originalPostDisplay(menu);
   auto hook = GetSingleton();
-
-  if (!hook->imguiInitialized) {
-    hook->InitImGui(pSwapChain);
+  if (!hook->initialized) {
+    return;
   }
-
+  if (!hook->imguiInitialized && !hook->InitImGui()) {
+    return;
+  }
   hook->RenderImGui();
-  return originalPresent(pSwapChain, SyncInterval, Flags);
 }
 
-bool D3D11Hook::InitImGui(IDXGISwapChain *swapChain) {
-  SKSE::log::info("Initializing ImGui...");
-
-  // Store swapchain for later use
-  swapChain_ = swapChain;
-
-  // Try to get D3D11 device from swap chain first
-  HRESULT hr = swapChain->GetDevice(__uuidof(ID3D11Device),
-                                    reinterpret_cast<void **>(&device));
-
-  if (FAILED(hr)) {
-    // Swap chain GetDevice failed - likely D3D12 swap chain proxy (frame
-    // generation) Get D3D11 device directly from Skyrim's renderer
-    SKSE::log::warn("Failed to get D3D11 device from swap chain (likely D3D12 "
-                    "proxy). Using BSGraphics device...");
-
-    auto renderer = RE::BSGraphics::Renderer::GetSingleton();
-    if (!renderer) {
-      SKSE::log::error("Failed to get BSGraphics::Renderer singleton");
-      return false;
-    }
-
-    // Get device and context from renderer data
-    auto &renderData = renderer->GetRuntimeData();
-    device = reinterpret_cast<ID3D11Device *>(renderData.forwarder);
-
-    if (!device) {
-      SKSE::log::error("Failed to get D3D11 device from BSGraphics::Renderer");
-      return false;
-    }
-
-    usingD3D12Fallback = true;
-    SKSE::log::info(
-        "Using D3D11 device from BSGraphics::Renderer (D3D12 fallback mode)");
+bool D3D11Hook::InitImGui() {
+  auto renderer = RE::BSGraphics::Renderer::GetSingleton();
+  if (!renderer) {
+    return false;
+  }
+  auto &renderData = renderer->GetRuntimeData();
+  auto renderDevice = reinterpret_cast<ID3D11Device *>(renderData.forwarder);
+  auto hwnd = reinterpret_cast<HWND>(renderData.renderWindows[0].hWnd);
+  if (!renderDevice || !hwnd) {
+    SKSE::log::error("Cannot initialize ImGui: renderer device/window unavailable");
+    return false;
   }
 
+  device = renderDevice;
+  device->AddRef();
   device->GetImmediateContext(&context);
 
-  // Get back buffer and create render target view (only for non-D3D12 mode)
-  // In D3D12 mode, we recreate render target each frame
-  if (!usingD3D12Fallback) {
-    ID3D11Texture2D *backBuffer = nullptr;
-    if (FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
-                                    reinterpret_cast<void **>(&backBuffer)))) {
-      SKSE::log::error("Failed to get back buffer");
-      return false;
-    }
-
-    if (FAILED(device->CreateRenderTargetView(backBuffer, nullptr,
-                                              &renderTargetView))) {
-      backBuffer->Release();
-      SKSE::log::error("Failed to create render target view");
-      return false;
-    }
-    backBuffer->Release();
-  }
-
-  // Get the render window handle
-  DXGI_SWAP_CHAIN_DESC desc;
-  swapChain->GetDesc(&desc);
-  HWND hwnd = desc.OutputWindow;
-
-  // Initialize ImGui
   IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-
+  ImGuiContextScope scope(ImGui::GetCurrentContext());
+  imguiContext = ImGui::CreateContext();
+  ImGui::SetCurrentContext(imguiContext);
   ImGuiIO &io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-  io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange; // Don't change cursor
+  io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
-  // Initialize platform/renderer backends
-  ImGui_ImplWin32_Init(hwnd);
-  ImGui_ImplDX11_Init(device, context);
+  bool platformReady = ImGui_ImplWin32_Init(hwnd);
+  bool rendererReady = platformReady && ImGui_ImplDX11_Init(device, context);
+  if (!rendererReady) {
+    if (platformReady) {
+      ImGui_ImplWin32_Shutdown();
+    }
+    ImGui::DestroyContext(imguiContext);
+    imguiContext = nullptr;
+    context->Release();
+    context = nullptr;
+    device->Release();
+    device = nullptr;
+    SKSE::log::error("Failed to initialize ImGui backends");
+    return false;
+  }
 
-  // Set up style
   ImGui::StyleColorsDark();
-
+  Overlay::GetSingleton()->Initialize();
   imguiInitialized = true;
-  SKSE::log::info("ImGui initialized successfully");
-
-  // Initialize the overlay (loads fonts)
-  Easy2Read::Overlay::GetSingleton()->Initialize();
-
+  SKSE::log::info("ImGui initialized for book UI rendering");
   return true;
 }
 
 void D3D11Hook::RenderImGui() {
-  if (!imguiInitialized) {
+  auto renderer = RE::BSGraphics::Renderer::GetSingleton();
+  if (!imguiInitialized || !renderer) {
     return;
   }
 
-  // In D3D12 fallback mode, use the currently bound render target
-  // (which should be what CS is rendering to)
-  if (usingD3D12Fallback && Overlay::GetSingleton()->IsVisible()) {
-    // Release old render target view
-    if (renderTargetView) {
-      renderTargetView->Release();
-      renderTargetView = nullptr;
-    }
-
-    // Get the currently bound render target from the context
-    ID3D11RenderTargetView *currentRTV = nullptr;
-    context->OMGetRenderTargets(1, &currentRTV, nullptr);
-
-    if (currentRTV) {
-      // Use the current render target
-      renderTargetView = currentRTV;
-      // Note: We don't Release() currentRTV here since we're keeping it
-    } else {
-      // Fallback: try to get from swap chain
-      ID3D11Texture2D *backBuffer = nullptr;
-      if (SUCCEEDED(
-              swapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D),
-                                    reinterpret_cast<void **>(&backBuffer)))) {
-        device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView);
-        backBuffer->Release();
-      }
-    }
+  // Read this every draw: CS redirects it for FG/HDR and menu transitions.
+  // Neither GetDevice success nor the currently bound RTV identifies that path.
+  auto renderTarget = reinterpret_cast<ID3D11RenderTargetView *>(
+      renderer->GetRuntimeData().renderTargets[RE::RENDER_TARGET::kFRAMEBUFFER].RTV);
+  if (!renderTarget) {
+    return;
   }
 
-  // Start new frame
+  ImGuiContextScope scope(imguiContext);
   ImGui_ImplDX11_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();
-
-  // Call the render callback to draw our overlay
   if (renderCallback) {
     renderCallback();
   }
-
-  // Render
   ImGui::Render();
-  if (renderTargetView) {
-    context->OMSetRenderTargets(1, &renderTargetView, nullptr);
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+  if (ImGui::GetDrawData()->TotalVtxCount == 0) {
+    return;
+  }
+
+  // The DX11 backend restores pipeline state, but not render target bindings.
+  ID3D11RenderTargetView *savedTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
+  ID3D11DepthStencilView *savedDepth = nullptr;
+  context->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT,
+                              savedTargets, &savedDepth);
+  context->OMSetRenderTargets(1, &renderTarget, nullptr);
+  ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+  context->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT,
+                              savedTargets, savedDepth);
+  for (auto target : savedTargets) {
+    if (target) {
+      target->Release();
+    }
+  }
+  if (savedDepth) {
+    savedDepth->Release();
   }
 }
 

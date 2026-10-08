@@ -1,8 +1,10 @@
 #pragma once
 
+#include "PCH.h"
 #include <d3d11.h>
-#include <dxgi.h>
 #include <functional>
+
+struct ImGuiContext;
 
 namespace Easy2Read {
 
@@ -28,25 +30,22 @@ private:
   D3D11Hook &operator=(const D3D11Hook &) = delete;
   D3D11Hook &operator=(D3D11Hook &&) = delete;
 
-  static HRESULT WINAPI HookedPresent(IDXGISwapChain *pSwapChain,
-                                      UINT SyncInterval, UINT Flags);
+  static void HookedPostDisplay(RE::BookMenu *menu);
 
-  bool InitImGui(IDXGISwapChain *swapChain);
+  bool InitImGui();
   void RenderImGui();
 
   RenderCallback renderCallback;
 
   ID3D11Device *device = nullptr;
   ID3D11DeviceContext *context = nullptr;
-  ID3D11RenderTargetView *renderTargetView = nullptr;
-  IDXGISwapChain *swapChain_ = nullptr;
+  ImGuiContext *imguiContext = nullptr;
 
   bool initialized = false;
   bool imguiInitialized = false;
-  bool usingD3D12Fallback = false;
 
   // Original function pointer
-  inline static decltype(&HookedPresent) originalPresent = nullptr;
+  inline static REL::Relocation<decltype(&HookedPostDisplay)> originalPostDisplay;
 };
 
 } // namespace Easy2Read

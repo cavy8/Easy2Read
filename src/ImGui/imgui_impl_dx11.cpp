@@ -107,9 +107,9 @@ static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data, ID3D11DeviceC
     ctx->PSSetShader(bd->pPixelShader, nullptr, 0);
     ctx->PSSetSamplers(0, 1, &bd->pFontSampler);
     ctx->GSSetShader(nullptr, nullptr, 0);
-    ctx->HSSetShader(nullptr, nullptr, 0); // In theory we should backup and restore this as well.. very infrequently used..
-    ctx->DSSetShader(nullptr, nullptr, 0); // In theory we should backup and restore this as well.. very infrequently used..
-    ctx->CSSetShader(nullptr, nullptr, 0); // In theory we should backup and restore this as well.. very infrequently used..
+    ctx->HSSetShader(nullptr, nullptr, 0);
+    ctx->DSSetShader(nullptr, nullptr, 0);
+    ctx->CSSetShader(nullptr, nullptr, 0);
 
     // Setup blend state
     const float blend_factor[4] = { 0.f, 0.f, 0.f, 0.f };
@@ -215,6 +215,11 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
         ID3D11PixelShader*          PS;
         ID3D11VertexShader*         VS;
         ID3D11GeometryShader*       GS;
+        ID3D11HullShader*           HS;
+        ID3D11DomainShader*         DS;
+        ID3D11ComputeShader*        CS;
+        UINT                        HSInstancesCount, DSInstancesCount, CSInstancesCount;
+        ID3D11ClassInstance         *HSInstances[256], *DSInstances[256], *CSInstances[256];
         UINT                        PSInstancesCount, VSInstancesCount, GSInstancesCount;
         ID3D11ClassInstance         *PSInstances[256], *VSInstances[256], *GSInstances[256];   // 256 is max according to PSSetShader documentation
         D3D11_PRIMITIVE_TOPOLOGY    PrimitiveTopology;
@@ -237,6 +242,10 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     ctx->VSGetShader(&old.VS, old.VSInstances, &old.VSInstancesCount);
     ctx->VSGetConstantBuffers(0, 1, &old.VSConstantBuffer);
     ctx->GSGetShader(&old.GS, old.GSInstances, &old.GSInstancesCount);
+    old.HSInstancesCount = old.DSInstancesCount = old.CSInstancesCount = 256;
+    ctx->HSGetShader(&old.HS, old.HSInstances, &old.HSInstancesCount);
+    ctx->DSGetShader(&old.DS, old.DSInstances, &old.DSInstancesCount);
+    ctx->CSGetShader(&old.CS, old.CSInstances, &old.CSInstancesCount);
 
     ctx->IAGetPrimitiveTopology(&old.PrimitiveTopology);
     ctx->IAGetIndexBuffer(&old.IndexBuffer, &old.IndexBufferFormat, &old.IndexBufferOffset);
@@ -301,6 +310,13 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     ctx->VSSetShader(old.VS, old.VSInstances, old.VSInstancesCount); if (old.VS) old.VS->Release();
     ctx->VSSetConstantBuffers(0, 1, &old.VSConstantBuffer); if (old.VSConstantBuffer) old.VSConstantBuffer->Release();
     ctx->GSSetShader(old.GS, old.GSInstances, old.GSInstancesCount); if (old.GS) old.GS->Release();
+    for (UINT i = 0; i < old.GSInstancesCount; i++) if (old.GSInstances[i]) old.GSInstances[i]->Release();
+    ctx->HSSetShader(old.HS, old.HSInstances, old.HSInstancesCount); if (old.HS) old.HS->Release();
+    ctx->DSSetShader(old.DS, old.DSInstances, old.DSInstancesCount); if (old.DS) old.DS->Release();
+    ctx->CSSetShader(old.CS, old.CSInstances, old.CSInstancesCount); if (old.CS) old.CS->Release();
+    for (UINT i = 0; i < old.HSInstancesCount; i++) if (old.HSInstances[i]) old.HSInstances[i]->Release();
+    for (UINT i = 0; i < old.DSInstancesCount; i++) if (old.DSInstances[i]) old.DSInstances[i]->Release();
+    for (UINT i = 0; i < old.CSInstancesCount; i++) if (old.CSInstances[i]) old.CSInstances[i]->Release();
     for (UINT i = 0; i < old.VSInstancesCount; i++) if (old.VSInstances[i]) old.VSInstances[i]->Release();
     ctx->IASetPrimitiveTopology(old.PrimitiveTopology);
     ctx->IASetIndexBuffer(old.IndexBuffer, old.IndexBufferFormat, old.IndexBufferOffset); if (old.IndexBuffer) old.IndexBuffer->Release();

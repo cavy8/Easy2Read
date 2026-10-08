@@ -51,7 +51,7 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
     // Install MenuControls hook to block inputs when overlay is visible
     Easy2Read::MenuControlsHook::Install();
 
-    // Install D3D11 hook and set up overlay render callback
+    // Draw the overlay after BookMenu, before HDR/frame-generation composition
     if (Easy2Read::D3D11Hook::GetSingleton()->Install()) {
       Easy2Read::D3D11Hook::GetSingleton()->SetRenderCallback(
           []() { Easy2Read::Overlay::GetSingleton()->Render(); });

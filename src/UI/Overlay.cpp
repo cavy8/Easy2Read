@@ -530,6 +530,7 @@ void Overlay::Show() {
   if (!visible) {
     visible = true;
     resetScrollOnNextFrame = true;
+    centerMouseOnNextFrame = true;
     SKSE::log::info("Overlay shown");
   }
 }
@@ -550,5 +551,48 @@ void Overlay::Toggle() {
 }
 
 void Overlay::AddScrollInput(float delta) { pendingScrollDelta += delta; }
+
+void Overlay::AddMouseMove(float dx, float dy) {
+  pendingMouseDelta.x += dx;
+  pendingMouseDelta.y += dy;
+}
+
+void Overlay::QueueMouseButton(std::uint32_t button, bool down) {
+  if (button < ImGuiMouseButton_COUNT) {
+    pendingMouseButtons.emplace_back(static_cast<int>(button), down);
+  }
+}
+
+void Overlay::UpdateMouse() {
+  ImGuiIO &io = ImGui::GetIO();
+  io.MouseDrawCursor = visible;
+  if (!visible) {
+    pendingMouseDelta = ImVec2(0.0f, 0.0f);
+    pendingMouseButtons.clear();
+    // Release anything held when the overlay closed; ImGui drops repeats.
+    for (int button = 0; button < ImGuiMouseButton_COUNT; ++button) {
+      io.AddMouseButtonEvent(button, false);
+    }
+    io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
+    return;
+  }
+
+  if (centerMouseOnNextFrame) {
+    mousePos = ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
+    centerMouseOnNextFrame = false;
+  }
+  mousePos.x = std::clamp(mousePos.x + pendingMouseDelta.x, 0.0f,
+                          (std::max)(0.0f, io.DisplaySize.x - 1.0f));
+  mousePos.y = std::clamp(mousePos.y + pendingMouseDelta.y, 0.0f,
+                          (std::max)(0.0f, io.DisplaySize.y - 1.0f));
+  pendingMouseDelta = ImVec2(0.0f, 0.0f);
+
+  // Queued after the Win32 backend's cursor fallback, so this position wins.
+  io.AddMousePosEvent(mousePos.x, mousePos.y);
+  for (const auto &[button, down] : pendingMouseButtons) {
+    io.AddMouseButtonEvent(button, down);
+  }
+  pendingMouseButtons.clear();
+}
 
 } // namespace Easy2Read

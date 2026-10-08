@@ -48,19 +48,27 @@ RE::BSEventNotifyControl MenuControlsHook::ProcessEvent_Hook(
         thumbstick->yValue = 0.0f;
       }
 
-      // Block mouse wheel (prevents page turning via scroll)
-      // Mouse wheel shows up as button events with scan codes 8 (up) and 9
-      // (down)
+      // Route mouse movement to the overlay's cursor instead of the book
+      if (eventType == RE::INPUT_EVENT_TYPE::kMouseMove) {
+        auto *move = static_cast<RE::MouseMoveEvent *>(event);
+        overlay->AddMouseMove(static_cast<float>(move->mouseInputX),
+                              static_cast<float>(move->mouseInputY));
+        move->mouseInputX = 0;
+        move->mouseInputY = 0;
+      }
+
+      // Block mouse buttons and wheel (prevents page turning). Buttons go to
+      // the overlay so the scrollbar can be dragged; the wheel scrolls via
+      // InputHandler, which reads only the scan code (8 = up, 9 = down).
       if (eventType == RE::INPUT_EVENT_TYPE::kButton) {
         auto *button = static_cast<RE::ButtonEvent *>(event);
         if (button->device.get() == RE::INPUT_DEVICE::kMouse) {
-          std::uint32_t scanCode = button->GetIDCode();
-          // 8 = scroll up, 9 = scroll down
-          if (scanCode == 8 || scanCode == 9) {
-            // Zero out the button value to prevent it from registering
-            button->value = 0.0f;
-            button->heldDownSecs = 0.0f;
+          if (button->IsDown() || button->IsUp()) {
+            overlay->QueueMouseButton(button->GetIDCode(), button->IsDown());
           }
+          // Zero out the button value to prevent it from registering
+          button->value = 0.0f;
+          button->heldDownSecs = 0.0f;
         }
       }
     }

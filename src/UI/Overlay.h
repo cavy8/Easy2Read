@@ -4,6 +4,9 @@
 #include <imgui.h>
 #include <string>
 #include <atomic>
+#include <cstdint>
+#include <utility>
+#include <vector>
 
 namespace Easy2Read {
 
@@ -35,6 +38,11 @@ public:
   // Scroll input - accumulates scroll delta from InputHandler
   void AddScrollInput(float delta);
 
+  // Mouse input from MenuControlsHook.
+  void AddMouseMove(float dx, float dy);
+  void QueueMouseButton(std::uint32_t button, bool down);
+  void UpdateMouse();
+
 private:
   Overlay() = default;
   Overlay(const Overlay &) = delete;
@@ -61,6 +69,12 @@ private:
 
   // Reset scroll position on next frame
   bool resetScrollOnNextFrame = false;
+
+  // Virtual cursor driven by raw mouse deltas while the overlay is visible
+  ImVec2 mousePos{0.0f, 0.0f};
+  ImVec2 pendingMouseDelta{0.0f, 0.0f};
+  std::vector<std::pair<int, bool>> pendingMouseButtons;
+  bool centerMouseOnNextFrame = false;
 
   // ImGui font pointer
   ImFont *customFont = nullptr;

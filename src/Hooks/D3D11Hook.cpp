@@ -154,6 +154,7 @@ void D3D11Hook::RenderImGui() {
   Overlay::GetSingleton()->RefreshResources();
   ImGui_ImplDX11_NewFrame();
   ImGui_ImplWin32_NewFrame();
+  Overlay::GetSingleton()->UpdateMouse();
   ImGui::NewFrame();
   if (renderCallback) {
     renderCallback();

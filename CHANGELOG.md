@@ -4,6 +4,12 @@ All notable changes to Easy2Read will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Updated CommonLibSSE-NG to 11.0.0 from alandtse's `ng` branch, pinned to revision `94faaed0c60eddd8347767f2d4d29a97c93bde8c`.
+- Enabled SE/AE support in one DLL, including 1.5.97, 1.6.1130, and 1.7.104 with matching SKSE and Address Library.
+- Renderer access now uses CommonLib's runtime data accessor; no hardcoded game addresses were added.
+- Build presets use `VCPKG_ROOT`; runtime version is recorded in the plugin log.
+
 ### Removed
 - Tofu Remover and its global text hooks, transliteration, and configuration settings.
 - MinHook dependency and AnyASCII license, which were used only by Tofu Remover.

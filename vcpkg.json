@@ -5,8 +5,13 @@
     "description": "Easy2Read - Alternative text display for Skyrim books",
     "license": "MIT",
     "dependencies": [
-        "commonlibsse-ng",
+        "directxtk",
+        "rapidcsv",
+        "spdlog",
         "imgui",
         "simpleini"
+    ],
+    "overrides": [
+        { "name": "imgui", "version": "1.91.0" }
     ]
 }

@@ -9,14 +9,15 @@
         {
             "name": "default",
             "displayName": "Default Config",
-            "description": "Default build using Ninja generator and vcpkg toolchain",
+            "description": "SE/AE build using Visual Studio 2022 and vcpkg",
             "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
-                    "value": "D:/Skyrim - Dev/SKSE Dev/tools/BuildTools/VC/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
                 },
                 "VCPKG_TARGET_TRIPLET": "x64-windows-static"
             }
@@ -31,7 +32,7 @@
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
-                    "value": "D:/Skyrim - Dev/SKSE Dev/tools/BuildTools/VC/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
                 },
                 "VCPKG_TARGET_TRIPLET": "x64-windows-static"
             }

@@ -77,6 +77,7 @@ SKSEPluginLoad(const SKSE::LoadInterface *a_skse) {
 
   SetupLog();
   logger::info("Easy2Read plugin initializing...");
+  logger::info("Skyrim runtime: {}", a_skse->RuntimeVersion().string());
 
   // Load configuration from INI
   Easy2Read::Settings::GetSingleton()->Load();

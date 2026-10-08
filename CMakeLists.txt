@@ -7,6 +7,7 @@ set(PROJECT_VERSION 1.4.1)
 # CommonLib NG CMake setup
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 # ---- Project ----
 project(
@@ -21,8 +22,22 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 # ---- Dependencies ----
-find_package(CommonLibSSE REQUIRED)
+include(FetchContent)
+
+# Pin the current ng revision so every build uses the same runtime support.
+set(ENABLE_SKYRIM_SE ON CACHE BOOL "" FORCE)
+set(ENABLE_SKYRIM_AE ON CACHE BOOL "" FORCE)
+set(ENABLE_SKYRIM_VR OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(CommonLibSSE
+    GIT_REPOSITORY https://github.com/alandtse/CommonLibSSE-NG.git
+    GIT_TAG 94faaed0c60eddd8347767f2d4d29a97c93bde8c
+    GIT_SUBMODULES ""
+)
+FetchContent_MakeAvailable(CommonLibSSE)
+include(${commonlibsse_SOURCE_DIR}/cmake/CommonLibSSE.cmake)
 find_package(imgui CONFIG REQUIRED)
+find_path(SIMPLEINI_INCLUDE_DIRS SimpleIni.h REQUIRED)
 
 # ---- Source Files ----
 set(SOURCES
@@ -59,6 +74,7 @@ set(HEADERS
 add_commonlibsse_plugin(
     ${PROJECT_NAME}
     AUTHOR "cavy8"
+    USE_ADDRESS_LIBRARY
     SOURCES ${SOURCES} ${HEADERS}
 )
 
@@ -73,6 +89,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY
 target_include_directories(${PROJECT_NAME}
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${SIMPLEINI_INCLUDE_DIRS}
 )
 
 # ---- Precompiled headers ----

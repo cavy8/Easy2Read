@@ -9,9 +9,14 @@ When reading a book/note, press the F key (configurable) to pull up an overlay w
 ## Installation
 
 1. Install [SKSE](https://skse.silverlock.org/) for your Skyrim version
-2. Copy the `Data/SKSE/Plugins/Easy2Read` directory to your Skyrim installation's `Data/SKSE/Plugins/` directory
-3. ???
-4. Profit
+2. Install [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444) for your game version (SE for 1.5.x; AE for 1.6.x/1.7.x).
+3. Install `Easy2Read.dll` in `Data/SKSE/Plugins/` and copy the supplied `Data` contents into your game's `Data` directory.
+
+### Runtime compatibility
+
+One DLL targets Skyrim SE 1.5.97 and AE 1.6.x/1.7.x, including 1.6.1130,
+1.6.1170, GOG 1.6.1179, and 1.7.104. Each runtime needs its matching SKSE and
+Address Library.
 
 ## Usage
 
@@ -49,7 +54,8 @@ Customize the overlay appearance:
 ### Requirements
 
 - Visual Studio 2022 with "Desktop development with C++" workload
-- CMake 3.20+
+- CMake 3.25+ (for the version 6 presets)
+- Git (CMake downloads the pinned CommonLibSSE-NG source)
 - vcpkg with `VCPKG_ROOT` environment variable set
 
 ### Build Steps
@@ -63,14 +69,14 @@ cd Easy2Read
 cmake --preset default
 
 # Build
-cmake --build build-vs --config Release
+cmake --build --preset release
 ```
 
-The built DLL will be in `build-vs/Release/Easy2Read.dll`.
+The built DLL will be in `build/Release/Easy2Read.dll`.
 
 ## Dependencies
 
-- [CommonLibSSE NG](https://github.com/CharmedBaryon/CommonLibSSE-NG) - SKSE plugin framework
+- [CommonLibSSE NG](https://github.com/alandtse/CommonLibSSE-NG/tree/ng) - SKSE plugin framework
 - [ImGui](https://github.com/ocornut/imgui) - Overlay rendering
 - [SimpleIni](https://github.com/brofield/simpleini) - INI file parsing
 

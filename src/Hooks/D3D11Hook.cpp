@@ -28,8 +28,9 @@ bool D3D11Hook::Install() {
     return false;
   }
 
-  auto &renderData = renderWindow->data;
-  auto swapChain = renderData.renderWindows[0].swapChain;
+  auto &renderData = renderWindow->GetRuntimeData();
+  auto swapChain = reinterpret_cast<IDXGISwapChain *>(
+      renderData.renderWindows[0].swapChain);
   if (!swapChain) {
     SKSE::log::error("Failed to get swap chain");
     return false;
@@ -119,7 +120,7 @@ bool D3D11Hook::InitImGui(IDXGISwapChain *swapChain) {
     }
 
     // Get device and context from renderer data
-    auto &renderData = renderer->data;
+    auto &renderData = renderer->GetRuntimeData();
     device = reinterpret_cast<ID3D11Device *>(renderData.forwarder);
 
     if (!device) {

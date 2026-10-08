@@ -1,13 +1,10 @@
 # Easy2Read
 
-An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom overlay window with configurable fonts for improved readability, plus a universal text sanitizer ("Tofu Remover") that fixes unsupported Unicode characters in dialogue, books, etc.
+An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom overlay window with configurable fonts for improved readability.
 
 ## Features
 
 When reading a book/note, press the F key (configurable) to pull up an overlay with the text. Theme support, multiple font options (including the OpenDyslexic font), and includes support for image descriptions/text replacement. By default, mappings are provided for vanilla and Scribes of Skyrim calligraphy. Certain aliases still don't convert to text properly and will simply be skipped over. If you have an idea on how to fix this, please reach out or submit a PR
-
-### Tofu Remover (Text Sanitizer)
-Automatically replaces unsupported Unicode characters ("tofu" □) with readable ASCII equivalents in books, dialogue, and quest records. Map markers, NPC names, and loading screens are currently not supported. Loading screen tips use a different system that seems to crash when hooked the same way as the other text. As such, I've not implemented a hook for it. This is a known limitation at this time. If you have a solution for this, please reach out or submit a PR :)
 
 ## Installation
 
@@ -24,9 +21,6 @@ Automatically replaces unsupported Unicode characters ("tofu" □) with readable
 3. Scroll with your mouse wheel to read long texts
 4. Press the toggle key again or close the book to hide the overlay
 
-### Tofu Remover
-Works automatically! Unsupported characters are replaced as text loads.
-
 ## Configuration
 
 ### Easy2Read.ini
@@ -34,12 +28,6 @@ Works automatically! Unsupported characters are replaced as text loads.
 ```ini
 [General]
 ToggleKey = 33  ; Hotkey scancode (default F = 33)
-
-[TextSanitization]
-Enable = true           ; Master toggle for Tofu Remover
-Mode = On               ; On, DetectOnly, or Off
-DebugMode = false       ; Verbose logging for troubleshooting
-LogReplacements = false ; Log each character replacement
 ```
 
 ### Easy2Read_Theme.ini
@@ -88,7 +76,6 @@ The built DLL will be in `build-vs/Release/Easy2Read.dll`.
 
 ## Future Plans
 
-- Fix loading screens if possible
 - Show the key to press for the overlay in the book UI
 - Better foreign language support
 
@@ -103,10 +90,7 @@ I can't stop you from doing anything you want with this. That said, I'd still ap
 - CommonLibSSE NG team for the SKSE framework
 - ImGui for the immediate-mode GUI library
 - SSE-ImGui project for D3D11 hooking reference
-- AnyASCII for transliteration table
-- SkyHorizon3 for Dynamic String Distributor reference
 - OpenDyslexic font
 - mjorka for Sovngarde font
 - Community Shaders team (input reference)
-- krypto5863 for Tofu Detective (character set reference)
 - Paul Renner for Futura font

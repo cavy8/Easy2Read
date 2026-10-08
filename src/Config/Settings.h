@@ -118,21 +118,6 @@ public:
   float scrollbarTrackAlpha = 1.0f; // Scrollbar background transparency
   float scrollbarThumbAlpha = 1.0f; // Scrollbar thumb transparency
 
-  // ---- Text Sanitization ----
-  bool sanitizationEnabled = true;
-  std::string sanitizationMode = "On"; // "Off", "DetectOnly", "On"
-  bool sanitizationDebugMode = false;
-  bool sanitizationLogReplacements = false;
-  float sanitizationMaxExpansionRatio = 3.0f;
-
-  // ---- Per-hook enable settings ----
-  bool hookEnableDescription = true;
-  bool hookEnableDialogue = true;
-  bool hookEnableDialogueMenu = true;
-  bool hookEnableQuest = true;
-  bool hookEnableMapMarker = true;
-  bool hookEnableNpcName = true;
-
 private:
   Settings() = default;
   Settings(const Settings &) = delete;

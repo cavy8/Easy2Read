@@ -7,7 +7,6 @@
     "dependencies": [
         "commonlibsse-ng",
         "imgui",
-        "minhook",
         "simpleini"
     ]
 }

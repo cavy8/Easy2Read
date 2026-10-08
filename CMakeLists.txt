@@ -31,12 +31,10 @@ set(SOURCES
     src/Hooks/MenuWatcher.cpp
     src/Hooks/InputHandler.cpp
     src/Hooks/D3D11Hook.cpp
-    src/Hooks/TextHooks.cpp
     src/Hooks/MenuControlsHook.cpp
     src/Utils/BookUtils.cpp
     src/Utils/ImageMappings.cpp
     src/Utils/AliasResolver.cpp
-    src/TextSanitization/TextSanitizer.cpp
     src/UI/Overlay.cpp
     src/ImGui/imgui_impl_dx11.cpp
     src/ImGui/imgui_impl_win32.cpp
@@ -48,12 +46,10 @@ set(HEADERS
     src/Hooks/MenuWatcher.h
     src/Hooks/InputHandler.h
     src/Hooks/D3D11Hook.h
-    src/Hooks/TextHooks.h
     src/Hooks/MenuControlsHook.h
     src/Utils/BookUtils.h
     src/Utils/ImageMappings.h
     src/Utils/AliasResolver.h
-    src/TextSanitization/TextSanitizer.h
     src/UI/Overlay.h
     src/ImGui/imgui_impl_dx11.h
     src/ImGui/imgui_impl_win32.h
@@ -85,13 +81,10 @@ target_precompile_headers(${PROJECT_NAME}
         src/PCH.h
 )
 
-# ---- Link ImGui and MinHook ----
-find_package(minhook CONFIG REQUIRED)
-
+# ---- Link ImGui ----
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         imgui::imgui
-        minhook::minhook
         d3d11
         dxgi
 )

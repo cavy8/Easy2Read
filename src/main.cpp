@@ -3,9 +3,7 @@
 #include "Hooks/InputHandler.h"
 #include "Hooks/MenuControlsHook.h"
 #include "Hooks/MenuWatcher.h"
-#include "Hooks/TextHooks.h"
 #include "PCH.h"
-#include "TextSanitization/TextSanitizer.h"
 #include "UI/Overlay.h"
 #include "Utils/ImageMappings.h"
 
@@ -45,42 +43,6 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
 
     // Load image-to-text mappings
     Easy2Read::ImageMappings::GetSingleton()->LoadMappings();
-
-    // Configure text sanitizer from settings
-    {
-      auto *settings = Easy2Read::Settings::GetSingleton();
-      auto *sanitizer = Easy2Read::TextSanitizer::GetSingleton();
-      sanitizer->SetEnabled(settings->sanitizationEnabled);
-      sanitizer->SetLogReplacements(settings->sanitizationLogReplacements);
-      sanitizer->SetMaxExpansionRatio(settings->sanitizationMaxExpansionRatio);
-      sanitizer->SetDebugMode(settings->sanitizationDebugMode);
-
-      // Parse mode string
-      if (settings->sanitizationMode == "Off") {
-        sanitizer->SetMode(Easy2Read::SanitizationMode::Off);
-      } else if (settings->sanitizationMode == "DetectOnly") {
-        sanitizer->SetMode(Easy2Read::SanitizationMode::DetectOnly);
-      } else {
-        sanitizer->SetMode(Easy2Read::SanitizationMode::AnyASCII);
-      }
-
-      // Configure per-hook enable settings
-      Easy2Read::HookSettings hooks;
-      hooks.enableDescription = settings->hookEnableDescription;
-      hooks.enableDialogue = settings->hookEnableDialogue;
-      hooks.enableDialogueMenu = settings->hookEnableDialogueMenu;
-      hooks.enableQuest = settings->hookEnableQuest;
-      hooks.enableMapMarker = settings->hookEnableMapMarker;
-      hooks.enableNpcName = settings->hookEnableNpcName;
-      sanitizer->SetHookSettings(hooks);
-    }
-
-    // Install text sanitization hooks for global coverage
-    if (Easy2Read::Settings::GetSingleton()->sanitizationEnabled) {
-      // Allocate trampoline space for hooks (256 bytes should be plenty)
-      SKSE::AllocTrampoline(256);
-      Easy2Read::TextHooks::Install();
-    }
 
     // Register event handlers
     Easy2Read::MenuWatcher::GetSingleton()->Register();

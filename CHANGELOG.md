@@ -2,6 +2,13 @@
 
 All notable changes to Easy2Read will be documented in this file.
 
+## [Unreleased]
+
+### Removed
+- Tofu Remover and its global text hooks, transliteration, and configuration settings.
+- MinHook dependency and AnyASCII license, which were used only by Tofu Remover.
+- Character sanitization of reading menu titles and body text.
+
 ## [1.4.1] - 2026-01-22
 
 ### Added

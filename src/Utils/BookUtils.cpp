@@ -2,7 +2,6 @@
 #include "AliasResolver.h"
 #include "ImageMappings.h"
 #include "PCH.h"
-#include "TextSanitization/TextSanitizer.h"
 
 namespace Easy2Read {
 
@@ -16,12 +15,6 @@ std::string BookUtils::GetBookTitle(RE::TESObjectBOOK *book) {
 
   auto *aliasResolver = AliasResolver::GetSingleton();
   title = aliasResolver->ResolveAliases(title, book);
-
-  // Apply text sanitization to title
-  auto *sanitizer = TextSanitizer::GetSingleton();
-  if (sanitizer->IsEnabled()) {
-    title = sanitizer->Sanitize(title);
-  }
 
   return title;
 }
@@ -60,19 +53,6 @@ std::string BookUtils::GetBookText(RE::TESObjectBOOK *book) {
 
   // Debug: log clean text length
   SKSE::log::info("BookUtils: Clean text length: {} bytes", cleanText.size());
-
-  // Apply text sanitization to remove unsupported Unicode
-  auto *sanitizer = TextSanitizer::GetSingleton();
-  SKSE::log::info("BookUtils: Sanitizer enabled={}, mode={}",
-                  sanitizer->IsEnabled() ? "true" : "false",
-                  static_cast<int>(sanitizer->GetMode()));
-
-  if (sanitizer->IsEnabled()) {
-    bool needsSanitization = sanitizer->NeedsSanitization(cleanText);
-    SKSE::log::info("BookUtils: NeedsSanitization={}",
-                    needsSanitization ? "true" : "false");
-    cleanText = sanitizer->Sanitize(cleanText);
-  }
 
   return cleanText;
 }

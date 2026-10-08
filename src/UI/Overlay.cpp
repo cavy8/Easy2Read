@@ -1,4 +1,5 @@
 #include "Overlay.h"
+#include "SkyUIFrame.h"
 #include "Config/Settings.h"
 #include "PCH.h"
 #include <imgui.h>
@@ -131,8 +132,11 @@ void Overlay::LoadFont() {
     customFont = io.Fonts->AddFontDefault(&config);
   }
 
-  // Build fonts
-  io.Fonts->Build();
+  // Include the extracted frame in the same texture as the fonts.
+  skyUIFrameRect = SkyUIFrame::AddToAtlas(*io.Fonts);
+  if (skyUIFrameRect < 0) {
+    SKSE::log::warn("Could not add SkyUI frame artwork to font atlas; using plain border");
+  }
 }
 
 void Overlay::Render() {
@@ -214,8 +218,12 @@ void Overlay::RenderWindow() {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, settings->windowRounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
                       ImVec2(settings->windowPadding, settings->windowPadding));
+  const bool useSkyUIFrame = settings->showBorder &&
+                            settings->showCornerOrnaments &&
+                            settings->borderSize > 0.0f && skyUIFrameRect >= 0;
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize,
-                      settings->showBorder ? settings->borderSize : 0.0f);
+                      settings->showBorder && !useSkyUIFrame
+                          ? settings->borderSize : 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, settings->scrollbarSize);
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding,
                       settings->scrollbarRounding);
@@ -231,6 +239,13 @@ void Overlay::RenderWindow() {
   }
 
   if (ImGui::Begin("###Easy2ReadOverlay", nullptr, flags)) {
+    if (useSkyUIFrame) {
+      SkyUIFrame::Draw(*ImGui::GetWindowDrawList(), *io.Fonts, skyUIFrameRect,
+                       ImGui::GetWindowPos(), ImGui::GetWindowSize(),
+                       ImGui::ColorConvertFloat4ToU32(borderColor),
+                       io.DisplaySize.y / 1080.0f * settings->borderSize);
+    }
+
     // Title section (conditionally rendered)
     if (settings->showTitle) {
       ImVec4 titleColor(settings->titleColorR / 255.0f,
@@ -242,7 +257,20 @@ void Overlay::RenderWindow() {
       float originalScale = ImGui::GetFont()->Scale;
       ImGui::GetFont()->Scale *= settings->titleScale;
       ImGui::PushFont(ImGui::GetFont());
-      ImGui::TextWrapped("%s", bookTitle.c_str());
+      if (settings->centerTitle) {
+        const float width = (std::max)(1.0f, ImGui::GetContentRegionAvail().x);
+        const ImVec2 titleSize =
+            ImGui::CalcTextSize(bookTitle.c_str(), nullptr, false, width);
+        ImVec2 position = ImGui::GetCursorScreenPos();
+        position.x += (std::max)(0.0f, (width - titleSize.x) * 0.5f);
+        ImGui::GetWindowDrawList()->AddText(
+            ImGui::GetFont(), ImGui::GetFontSize(), position,
+            ImGui::ColorConvertFloat4ToU32(titleColor), bookTitle.c_str(),
+            nullptr, width);
+        ImGui::Dummy(ImVec2(width, titleSize.y));
+      } else {
+        ImGui::TextWrapped("%s", bookTitle.c_str());
+      }
       ImGui::PopFont();
       ImGui::GetFont()->Scale = originalScale;
       ImGui::PopStyleColor();

@@ -66,76 +66,76 @@ void Settings::LoadTheme() {
   languageSupport = ParseLanguageSupport(langSupportStr);
 
   // [Colors] - Title
-  titleColorR =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "TitleColorR", 255));
-  titleColorG =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "TitleColorG", 220));
-  titleColorB =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "TitleColorB", 150));
+  titleColorR = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "TitleColorR", 255));
+  titleColorG = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "TitleColorG", titleColorG));
+  titleColorB = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "TitleColorB", titleColorB));
 
   // [Colors] - Body
-  bodyColorR =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BodyColorR", 255));
-  bodyColorG =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BodyColorG", 255));
-  bodyColorB =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BodyColorB", 255));
+  bodyColorR = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "BodyColorR", 255));
+  bodyColorG = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "BodyColorG", 255));
+  bodyColorB = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "BodyColorB", 255));
 
   // [Colors] - Window
-  windowColorR =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "WindowColorR", 20));
-  windowColorG =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "WindowColorG", 20));
-  windowColorB =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "WindowColorB", 25));
+  windowColorR = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "WindowColorR", windowColorR));
+  windowColorG = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "WindowColorG", windowColorG));
+  windowColorB = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "WindowColorB", windowColorB));
 
   // [Colors] - Border
-  borderColorR =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BorderColorR", 80));
-  borderColorG =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BorderColorG", 80));
-  borderColorB =
-      static_cast<std::uint8_t>(ini.GetLongValue("Colors", "BorderColorB", 90));
+  borderColorR = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "BorderColorR", borderColorR));
+  borderColorG = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "BorderColorG", borderColorG));
+  borderColorB = static_cast<std::uint8_t>(
+      ini.GetLongValue("Colors", "BorderColorB", borderColorB));
   borderSize =
       static_cast<float>(ini.GetDoubleValue("Colors", "BorderSize", 1.0));
 
   // [Colors] - Separator
   separatorColorR = static_cast<std::uint8_t>(
-      ini.GetLongValue("Colors", "SeparatorColorR", 100));
+      ini.GetLongValue("Colors", "SeparatorColorR", separatorColorR));
   separatorColorG = static_cast<std::uint8_t>(
-      ini.GetLongValue("Colors", "SeparatorColorG", 100));
+      ini.GetLongValue("Colors", "SeparatorColorG", separatorColorG));
   separatorColorB = static_cast<std::uint8_t>(
-      ini.GetLongValue("Colors", "SeparatorColorB", 110));
+      ini.GetLongValue("Colors", "SeparatorColorB", separatorColorB));
 
   // [Scrollbar] - Background
   scrollbarBgColorR = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "BackgroundColorR", 30));
+      ini.GetLongValue("Scrollbar", "BackgroundColorR", scrollbarBgColorR));
   scrollbarBgColorG = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "BackgroundColorG", 30));
+      ini.GetLongValue("Scrollbar", "BackgroundColorG", scrollbarBgColorG));
   scrollbarBgColorB = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "BackgroundColorB", 35));
+      ini.GetLongValue("Scrollbar", "BackgroundColorB", scrollbarBgColorB));
 
   // [Scrollbar] - Thumb
   scrollbarColorR = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "ThumbColorR", 80));
+      ini.GetLongValue("Scrollbar", "ThumbColorR", scrollbarColorR));
   scrollbarColorG = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "ThumbColorG", 80));
+      ini.GetLongValue("Scrollbar", "ThumbColorG", scrollbarColorG));
   scrollbarColorB = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "ThumbColorB", 90));
+      ini.GetLongValue("Scrollbar", "ThumbColorB", scrollbarColorB));
 
   // [Scrollbar] - Thumb Hover
   scrollbarHoverColorR = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "ThumbHoverColorR", 120));
+      ini.GetLongValue("Scrollbar", "ThumbHoverColorR", scrollbarHoverColorR));
   scrollbarHoverColorG = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "ThumbHoverColorG", 120));
+      ini.GetLongValue("Scrollbar", "ThumbHoverColorG", scrollbarHoverColorG));
   scrollbarHoverColorB = static_cast<std::uint8_t>(
-      ini.GetLongValue("Scrollbar", "ThumbHoverColorB", 130));
+      ini.GetLongValue("Scrollbar", "ThumbHoverColorB", scrollbarHoverColorB));
 
   // [Scrollbar] - Size/Speed
   scrollbarSize =
-      static_cast<float>(ini.GetDoubleValue("Scrollbar", "Size", 14.0));
-  scrollbarRounding =
-      static_cast<float>(ini.GetDoubleValue("Scrollbar", "Rounding", 4.0));
+      static_cast<float>(ini.GetDoubleValue("Scrollbar", "Size", scrollbarSize));
+  scrollbarRounding = static_cast<float>(
+      ini.GetDoubleValue("Scrollbar", "Rounding", scrollbarRounding));
   scrollSpeed =
       static_cast<float>(ini.GetDoubleValue("Scrollbar", "ScrollSpeed", 50.0));
 
@@ -145,11 +145,15 @@ void Settings::LoadTheme() {
   windowHeightPercent =
       static_cast<float>(ini.GetDoubleValue("Window", "HeightPercent", 70.0));
   windowRounding =
-      static_cast<float>(ini.GetDoubleValue("Window", "Rounding", 8.0));
+      static_cast<float>(ini.GetDoubleValue("Window", "Rounding", windowRounding));
   windowPadding =
-      static_cast<float>(ini.GetDoubleValue("Window", "Padding", 12.0));
+      static_cast<float>(ini.GetDoubleValue("Window", "Padding", windowPadding));
 
   // [Visibility]
+  // Older theme files retain their original title layout and plain border.
+  centerTitle = ini.GetBoolValue("Visibility", "CenterTitle", false);
+  showCornerOrnaments =
+      ini.GetBoolValue("Visibility", "ShowCornerOrnaments", false);
   showTitle = ini.GetBoolValue("Visibility", "ShowTitle", true);
   showSeparator = ini.GetBoolValue("Visibility", "ShowSeparator", true);
   showBorder = ini.GetBoolValue("Visibility", "ShowBorder", true);
@@ -158,16 +162,16 @@ void Settings::LoadTheme() {
 
   // [Transparency]
   windowAlpha =
-      static_cast<float>(ini.GetLongValue("Transparency", "WindowAlpha", 90)) /
+      static_cast<float>(ini.GetLongValue("Transparency", "WindowAlpha", 80)) /
       100.0f;
   borderAlpha =
-      static_cast<float>(ini.GetLongValue("Transparency", "BorderAlpha", 100)) /
+      static_cast<float>(ini.GetLongValue("Transparency", "BorderAlpha", 85)) /
       100.0f;
   separatorAlpha = static_cast<float>(ini.GetLongValue("Transparency",
-                                                       "SeparatorAlpha", 100)) /
+                                                       "SeparatorAlpha", 75)) /
                    100.0f;
   scrollbarTrackAlpha = static_cast<float>(ini.GetLongValue(
-                            "Transparency", "ScrollbarTrackAlpha", 100)) /
+                            "Transparency", "ScrollbarTrackAlpha", 50)) /
                         100.0f;
   scrollbarThumbAlpha = static_cast<float>(ini.GetLongValue(
                             "Transparency", "ScrollbarThumbAlpha", 100)) /

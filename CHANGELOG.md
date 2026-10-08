@@ -4,7 +4,13 @@ All notable changes to Easy2Read will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- PowerShell release script builds versioned mod-manager-ready main and theme zip files, with optional debug symbols and test labels.
+- Modern preset preserves the previous default theme.
+- Optional centered titles (`CenterTitle`) and Nordic-inspired border corners (`ShowCornerOrnaments`) in every theme configuration. Older theme files without these keys keep their original title alignment and plain border.
+
 ### Changed
+- Default theme now follows SkyUI/Vanilla styling: translucent black, white titles, thin gray borders, square corners, and narrow square scrollbars. Retains the bundled Sovngarde font.
 - Reading overlay now draws after BookMenu into Skyrim's live UI framebuffer, before Community Shaders HDR/frame-generation composition. Removed swap-chain device-failure detection and cached output targets; restores graphics state after drawing.
 - Updated CommonLibSSE-NG to 11.0.0 from alandtse's `ng` branch, pinned to revision `94faaed0c60eddd8347767f2d4d29a97c93bde8c`.
 - Enabled SE/AE support in one DLL, including 1.5.97, 1.6.1130, and 1.7.104 with matching SKSE and Address Library.

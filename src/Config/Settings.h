@@ -6,7 +6,7 @@
 namespace Easy2Read {
 
 enum class FontPreset {
-  Sovngarde,    // Sovngarde font - Skyrim-themed (new default)
+  Sovngarde,    // Sovngarde font - Skyrim-themed (default)
   Dyslexic,     // OpenDyslexic - accessibility font
   ImGuiDefault, // Built-in ImGui font
   Custom        // User-specified font file
@@ -55,14 +55,14 @@ public:
   // ---- Window (percentage of screen size, 0-100) ----
   float windowWidthPercent = 50.0f;  // 50% of screen width
   float windowHeightPercent = 70.0f; // 70% of screen height
-  float windowRounding = 8.0f;       // Corner rounding in pixels
-  float windowPadding = 12.0f;       // Padding inside window
+  float windowRounding = 0.0f;       // Corner rounding in pixels
+  float windowPadding = 32.0f;       // Padding inside window
 
   // ---- Colors (RGB, 0-255) ----
   // Title text
   std::uint8_t titleColorR = 255;
-  std::uint8_t titleColorG = 220;
-  std::uint8_t titleColorB = 150;
+  std::uint8_t titleColorG = 255;
+  std::uint8_t titleColorB = 255;
 
   // Body text
   std::uint8_t bodyColorR = 255;
@@ -70,52 +70,54 @@ public:
   std::uint8_t bodyColorB = 255;
 
   // Window background
-  std::uint8_t windowColorR = 20;
-  std::uint8_t windowColorG = 20;
-  std::uint8_t windowColorB = 25;
+  std::uint8_t windowColorR = 0;
+  std::uint8_t windowColorG = 0;
+  std::uint8_t windowColorB = 0;
 
   // Window border
-  std::uint8_t borderColorR = 80;
-  std::uint8_t borderColorG = 80;
-  std::uint8_t borderColorB = 90;
+  std::uint8_t borderColorR = 160;
+  std::uint8_t borderColorG = 160;
+  std::uint8_t borderColorB = 160;
   float borderSize = 1.0f;
 
   // Separator line
-  std::uint8_t separatorColorR = 100;
-  std::uint8_t separatorColorG = 100;
-  std::uint8_t separatorColorB = 110;
+  std::uint8_t separatorColorR = 140;
+  std::uint8_t separatorColorG = 140;
+  std::uint8_t separatorColorB = 140;
 
   // Scrollbar background
-  std::uint8_t scrollbarBgColorR = 30;
-  std::uint8_t scrollbarBgColorG = 30;
-  std::uint8_t scrollbarBgColorB = 35;
+  std::uint8_t scrollbarBgColorR = 25;
+  std::uint8_t scrollbarBgColorG = 25;
+  std::uint8_t scrollbarBgColorB = 25;
 
   // Scrollbar thumb (handle)
-  std::uint8_t scrollbarColorR = 80;
-  std::uint8_t scrollbarColorG = 80;
-  std::uint8_t scrollbarColorB = 90;
+  std::uint8_t scrollbarColorR = 160;
+  std::uint8_t scrollbarColorG = 160;
+  std::uint8_t scrollbarColorB = 160;
 
   // Scrollbar thumb hover
-  std::uint8_t scrollbarHoverColorR = 120;
-  std::uint8_t scrollbarHoverColorG = 120;
-  std::uint8_t scrollbarHoverColorB = 130;
+  std::uint8_t scrollbarHoverColorR = 210;
+  std::uint8_t scrollbarHoverColorG = 210;
+  std::uint8_t scrollbarHoverColorB = 210;
 
   // Scrollbar settings
-  float scrollbarSize = 14.0f;    // Width of scrollbar
-  float scrollbarRounding = 4.0f; // Rounding of scrollbar corners
+  float scrollbarSize = 10.0f;    // Width of scrollbar
+  float scrollbarRounding = 0.0f; // Rounding of scrollbar corners
   float scrollSpeed = 50.0f;      // Pixels per scroll wheel tick
 
   // ---- Visibility Toggles ----
-  bool showTitle = true;          // Show book title
-  bool showSeparator = true;      // Show separator line under title
-  bool showBorder = true;         // Show window border
+  bool centerTitle = true;         // Center the title within the window
+  bool showCornerOrnaments = true; // SkyUI message-box border artwork
+  bool showTitle = true;           // Show book title
+  bool showSeparator = true;       // Show separator line under title
+  bool showBorder = true;          // Show window border
   bool showScrollbarTrack = true; // Show scrollbar background track
 
   // ---- Per-Element Transparency (0-1) ----
-  float windowAlpha = 0.90f;        // Window background transparency
-  float borderAlpha = 1.0f;         // Border transparency
-  float separatorAlpha = 1.0f;      // Separator line transparency
-  float scrollbarTrackAlpha = 1.0f; // Scrollbar background transparency
+  float windowAlpha = 0.80f;        // Window background transparency
+  float borderAlpha = 0.85f;         // Border transparency
+  float separatorAlpha = 0.75f;      // Separator line transparency
+  float scrollbarTrackAlpha = 0.50f; // Scrollbar background transparency
   float scrollbarThumbAlpha = 1.0f; // Scrollbar thumb transparency
 
 private:

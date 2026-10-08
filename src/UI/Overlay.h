@@ -54,6 +54,7 @@ private:
 
   // ImGui font pointer
   ImFont *customFont = nullptr;
+  int skyUIFrameRect = -1; // Extracted frame rectangle in the font atlas
 };
 
 } // namespace Easy2Read

@@ -51,6 +51,7 @@ set(SOURCES
     src/Utils/ImageMappings.cpp
     src/Utils/AliasResolver.cpp
     src/UI/Overlay.cpp
+    src/UI/SkyUIFrame.cpp
     src/ImGui/imgui_impl_dx11.cpp
     src/ImGui/imgui_impl_win32.cpp
 )
@@ -66,6 +67,8 @@ set(HEADERS
     src/Utils/ImageMappings.h
     src/Utils/AliasResolver.h
     src/UI/Overlay.h
+    src/UI/SkyUIFrame.h
+    src/UI/SkyUIFrameData.h
     src/ImGui/imgui_impl_dx11.h
     src/ImGui/imgui_impl_win32.h
 )

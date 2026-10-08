@@ -37,12 +37,31 @@ ToggleKey = 33  ; Hotkey scancode (default F = 33)
 
 ### Easy2Read_Theme.ini
 
+The default theme follows SkyUI/Vanilla menus: translucent black, white text,
+centered titles, the original SkyUI message-box frame and corner artwork, and
+square scrollbars.
+
+The previous default is now **Modern**. To install it, copy the contents of `Presets/Modern`
+into your game's `Data` directory and overwrite `Easy2Read_Theme.ini`. Install
+`Presets/Untarnished UI` the same way. Reinstall the supplied `Data` theme file to
+restore the new default, then restart Skyrim to load the theme.
+
 Customize the overlay appearance:
 
 - **[Font]**: FontPreset (Sovngarde/Dyslexic/ImGui/Custom), FontSize, TitleScale
 - **[Colors]**: Title, body text, window, border, separator colors (RGB 0-255)
 - **[Scrollbar]**: Background, thumb, hover colors, size, rounding, scroll speed
-- **[Window]**: Size (% of screen), opacity, rounding, padding
+- **[Window]**: Size (% of screen), rounding, padding
+- **[Visibility]**: ShowTitle, CenterTitle, ShowSeparator, ShowBorder, ShowCornerOrnaments, ShowScrollbarTrack
+- **[Transparency]**: WindowAlpha, BorderAlpha, SeparatorAlpha, ScrollbarTrackAlpha, ScrollbarThumbAlpha (0-100)
+
+`ShowCornerOrnaments` requires `ShowBorder = true` and a positive `BorderSize`.
+It replaces the plain border with SkyUI's extracted frame; `BorderSize = 1.0`
+preserves the artwork's native proportions at 1080p, and other values scale it.
+The corners scale uniformly with screen height while the middle strips stretch
+to fit the window. The artwork is embedded in the DLL.
+Existing theme files that omit `CenterTitle` and `ShowCornerOrnaments` retain
+left-aligned titles and plain borders.
 
 ### Foreign Language Support
 
@@ -74,6 +93,32 @@ cmake --build --preset release
 
 The built DLL will be in `build/Release/Easy2Read.dll`.
 
+### Build release archives
+
+From the repository folder, run:
+
+```powershell
+.\build-release.cmd
+# Add a test label and a separate debug-symbol archive:
+.\build-release.cmd -Suffix test -IncludeSymbols
+```
+
+The launcher runs `build-release.ps1` with a process-only execution-policy bypass,
+so you don't need to change your Windows script policy. You can also run the
+PowerShell script directly if your execution policy allows it.
+
+The script configures and builds Release in `build/release-package` using the
+requirements above. It reads the version from `CMakeLists.txt` and writes to `dist`:
+
+- `Easy2Read-<version>.zip`: DLL, configs, bundled fonts, image mappings, licenses, and documentation. Install directly with your mod manager, or extract into Skyrim's `Data` folder.
+- `Easy2Read-<version>-Theme-Modern.zip` and `Easy2Read-<version>-Theme-Untarnished-UI.zip`: optional theme overrides. Install one after the main package and let it overwrite the theme file.
+- `Easy2Read-<version>-Symbols.zip`: PDB for debugging, only with `-IncludeSymbols`.
+
+`-BuildDirectory` and `-OutputDirectory` accept paths relative to the repository
+or absolute paths. The script stops on build failures, prints each archive's
+SHA256, and temporarily disables `SKYRIM_MODS_FOLDER` so packaging does not install
+into your game. Re-running replaces archives with the same version and suffix.
+
 ## Dependencies
 
 - [CommonLibSSE NG](https://github.com/alandtse/CommonLibSSE-NG/tree/ng) - SKSE plugin framework
@@ -99,4 +144,5 @@ I can't stop you from doing anything you want with this. That said, I'd still ap
 - OpenDyslexic font
 - mjorka for Sovngarde font
 - Community Shaders team (input reference)
+- SkyUI team for the message-box frame artwork, extracted from [SkyUI Community](https://github.com/doodlum/SkyUI-Community). See [extraction details](assets/SkyUI/README.md).
 - Paul Renner for Futura font

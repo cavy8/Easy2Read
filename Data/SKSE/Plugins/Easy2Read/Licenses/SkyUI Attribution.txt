@@ -1,0 +1,17 @@
+SkyUI message-box frame artwork
+
+Credits: SkyUI team; doodlum and SkyUI Community contributors.
+Source: https://github.com/doodlum/SkyUI-Community
+Revision: b7a24a936647e815269e34f4899e4b09768eff29
+Original asset: data/interface/messagebox.swf, shape 10 / Background_mc.
+XML source: source/swf/messagebox.xml.
+
+Used under SkyUI's open asset permissions. SkyUI icons are not included.
+
+Easy2Read modifications: removed the solid black background fill, rasterized
+the decorative frame at 4x, and packed eight border slices into an embedded
+alpha atlas. Original corner geometry and curves are preserved; frame color,
+opacity, and scale are configurable.
+
+Extraction source and regeneration instructions are included in Easy2Read's
+source repository under assets/SkyUI and tools/generate-skyui-frame.py.

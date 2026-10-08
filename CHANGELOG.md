@@ -5,11 +5,13 @@ All notable changes to Easy2Read will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Location alias names and unavailable reference alias names resolve from the current quest instance's stored text data.
 - PowerShell release script builds versioned mod-manager-ready main and theme zip files, with optional debug symbols and test labels.
 - Modern preset preserves the previous default theme.
 - Optional centered titles (`CenterTitle`) and Nordic-inspired border corners (`ShowCornerOrnaments`) in every theme configuration. Older theme files without these keys keep their original title alignment and plain border.
 
 ### Changed
+- Reference aliases use custom display names before falling back to base-object names. Alias tag keywords accept any letter case, and book ownership lookup only reads forced-reference fill data for forced aliases.
 - Default theme now follows SkyUI/Vanilla styling: translucent black, white titles, thin gray borders, square corners, and narrow square scrollbars. Uses bundled Barlow Condensed Regular at 24 px, with its SIL Open Font License included. Sovngarde remains available and is retained by the Modern preset.
 - Reading overlay now draws after BookMenu into Skyrim's live UI framebuffer, before Community Shaders HDR/frame-generation composition. Removed swap-chain device-failure detection and cached output targets; restores graphics state after drawing.
 - Updated CommonLibSSE-NG to 11.0.0 from alandtse's `ng` branch, pinned to revision `94faaed0c60eddd8347767f2d4d29a97c93bde8c`.

@@ -4,7 +4,7 @@ An SKSE plugin for Skyrim SE/AE that displays book and note text in a custom ove
 
 ## Features
 
-When reading a book/note, press the F key (configurable) to pull up an overlay with the text. Theme support, multiple font options (including the OpenDyslexic font), and includes support for image descriptions/text replacement. By default, mappings are provided for vanilla and Scribes of Skyrim calligraphy. Certain aliases still don't convert to text properly and will simply be skipped over. If you have an idea on how to fix this, please reach out or submit a PR
+When reading a book/note, press the F key (configurable) to pull up an overlay with the text. Theme support, multiple font options (including the OpenDyslexic font), and includes support for image descriptions/text replacement. By default, mappings are provided for vanilla and Scribes of Skyrim calligraphy.
 
 ## Installation
 

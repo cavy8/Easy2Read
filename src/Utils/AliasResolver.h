@@ -52,7 +52,8 @@ private:
                                      const std::string &aliasName);
 
   /**
-   * Resolve an alias to its display name.
+   * Resolve an alias to its live display name or current quest instance name.
+   * Location aliases require a stored name in the quest's instance text data.
    *
    * @param alias The alias to resolve
    * @return The display name, or empty string if unresolved

@@ -11,9 +11,9 @@ AliasResolver *AliasResolver::GetSingleton() {
 
 std::string AliasResolver::ResolveAliases(const std::string &text,
                                           RE::TESObjectBOOK *book) {
-  // Fast path: if no alias tags, return as-is
-  if (text.find("<Alias=") == std::string::npos &&
-      text.find("<alias=") == std::string::npos) {
+  static const std::regex aliasPattern(R"(<Alias=([^>]+)>)",
+                                       std::regex::icase);
+  if (!std::regex_search(text, aliasPattern)) {
     return text;
   }
 
@@ -34,9 +34,6 @@ std::string AliasResolver::ResolveAliases(const std::string &text,
                   owningQuest->GetName(), book->GetName());
 
   std::string result = text;
-
-  // Regex to match <Alias=NAME> pattern (case insensitive for "Alias")
-  std::regex aliasPattern(R"(<[Aa]lias=([^>]+)>)");
 
   std::smatch match;
   std::string::const_iterator searchStart = result.cbegin();
@@ -126,8 +123,8 @@ RE::TESQuest *AliasResolver::FindQuestForBook(RE::TESObjectBOOK *book) {
 
         // Check if the alias has a forced reference to this book's base form
         // Some quests use forced refs rather than filled refs
-        auto forcedHandle = refAlias->fillData.forced.forcedRef;
-        if (forcedHandle) {
+        if (refAlias->fillType.get() == RE::BGSBaseAlias::FILL_TYPE::kForced) {
+          auto forcedHandle = refAlias->fillData.forced.forcedRef;
           auto forcedRef =
               RE::TESObjectREFR::LookupByHandle(forcedHandle.native_handle());
           if (forcedRef) {
@@ -174,7 +171,7 @@ std::string AliasResolver::ResolveAliasName(RE::BGSBaseAlias *alias) {
   if (auto *refAlias = skyrim_cast<RE::BGSRefAlias *>(alias)) {
     auto *ref = refAlias->GetReference();
     if (ref) {
-      const char *name = ref->GetName();
+      const char *name = ref->GetDisplayFullName();
       if (name && name[0] != '\0') {
         return name;
       }
@@ -187,14 +184,32 @@ std::string AliasResolver::ResolveAliasName(RE::BGSBaseAlias *alias) {
         }
       }
     }
-    return "";
   }
 
-  // Note: BGSLocAlias is not fully reverse-engineered in CommonLibSSE-NG
-  // Location aliases cannot be resolved at this time
+  // Quest text stores named forms by alias ID, including locations. Use only
+  // the current instance so a restarted radiant quest cannot reuse old names.
+  if (auto *quest = alias->owningQuest) {
+    for (auto *instance : quest->instanceData) {
+      if (!instance || instance->id != quest->currentInstanceID) {
+        continue;
+      }
 
-  // Unknown alias type
-  SKSE::log::debug("AliasResolver: Unknown alias type for '{}'",
+      for (const auto &entry : instance->stringData) {
+        if (entry.aliasID != alias->aliasID) {
+          continue;
+        }
+
+        auto *form = RE::TESForm::LookupByID(entry.fullNameFormID);
+        const char *name = form ? form->GetName() : nullptr;
+        if (name && name[0] != '\0') {
+          return name;
+        }
+      }
+      break;
+    }
+  }
+
+  SKSE::log::debug("AliasResolver: No live or stored name for alias '{}'",
                    alias->aliasName.c_str());
   return "";
 }

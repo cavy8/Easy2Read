@@ -138,7 +138,7 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
             std::string text = BookUtils::GetBookText(book);
             overlay->SetContent(title, text);
           }
-          overlay->Show();
+          overlay->Show(false);
         }
       }
     }

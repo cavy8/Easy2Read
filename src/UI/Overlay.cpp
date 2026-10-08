@@ -526,9 +526,10 @@ void Overlay::ClearContent() {
   bookText.clear();
 }
 
-void Overlay::Show() {
+void Overlay::Show(bool useMouse) {
   if (!visible) {
     visible = true;
+    mouseEnabled = useMouse;
     resetScrollOnNextFrame = true;
     centerMouseOnNextFrame = true;
     SKSE::log::info("Overlay shown");
@@ -553,20 +554,26 @@ void Overlay::Toggle() {
 void Overlay::AddScrollInput(float delta) { pendingScrollDelta += delta; }
 
 void Overlay::AddMouseMove(float dx, float dy) {
+  if (dx != 0.0f || dy != 0.0f) {
+    mouseEnabled = true;
+  }
   pendingMouseDelta.x += dx;
   pendingMouseDelta.y += dy;
 }
 
 void Overlay::QueueMouseButton(std::uint32_t button, bool down) {
   if (button < ImGuiMouseButton_COUNT) {
+    if (down) {
+      mouseEnabled = true;
+    }
     pendingMouseButtons.emplace_back(static_cast<int>(button), down);
   }
 }
 
 void Overlay::UpdateMouse() {
   ImGuiIO &io = ImGui::GetIO();
-  io.MouseDrawCursor = visible;
-  if (!visible) {
+  io.MouseDrawCursor = visible && mouseEnabled;
+  if (!visible || !mouseEnabled) {
     pendingMouseDelta = ImVec2(0.0f, 0.0f);
     pendingMouseButtons.clear();
     // Release anything held when the overlay closed; ImGui drops repeats.

@@ -5,6 +5,7 @@ All notable changes to Easy2Read will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- Opening the reading overlay with the gamepad toggle keeps the mouse cursor hidden until the mouse is moved or clicked. Keyboard toggles still show the cursor.
 - Book line breaks match the game. Vanilla book text uses CRLF line endings, and each `\r\n` was counted as two breaks, so title pages and verse showed a blank line between every line. Trailing spaces before a line break are also removed.
 - Alias tags match quest alias names case-insensitively, as the game does. The engine's shared string cache keeps the first-loaded spelling (e.g. Skyrim.esm's `Questgiver`), so Missives' `<Alias=QuestGiver>` and `<Alias=Recipient>` were reported as missing from their quest.
 - Stored actor/reference alias names use reference display names or base-object names; generic form-name lookup returns empty for references. Unresolved aliases now log their quest, instance and missing stored-form details at warning level.

@@ -30,7 +30,7 @@ public:
   void ClearContent();
 
   // Visibility control
-  void Show();
+  void Show(bool useMouse = true);
   void Hide();
   void Toggle();
   [[nodiscard]] bool IsVisible() const { return visible; }
@@ -57,6 +57,7 @@ private:
   void LoadFont();
 
   bool visible = false;
+  bool mouseEnabled = true;
   bool fontLoaded = false;
   std::atomic<bool> resourceRefreshPending{false};
   std::atomic<bool> fontRefreshPending{false};

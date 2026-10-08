@@ -1,10 +1,89 @@
 #include "Overlay.h"
 #include "SkyUIFrame.h"
 #include "Config/Settings.h"
+#include "Hooks/MenuWatcher.h"
 #include "PCH.h"
+#include <cmath>
+#include <limits>
 #include <imgui.h>
 
 namespace Easy2Read {
+namespace {
+struct BookScreenBounds {
+  float bottom = std::numeric_limits<float>::lowest();
+  bool valid = false;
+};
+
+void IncludeModelBounds(RE::NiAVObject *object, RE::NiCamera *camera,
+                        const ImVec2 &displaySize, BookScreenBounds &bounds) {
+  if (!object || object->GetAppCulled()) {
+    return;
+  }
+  if (auto node = object->AsNode()) {
+    for (const auto &child : node->GetChildren()) {
+      IncludeModelBounds(child.get(), camera, displaySize, bounds);
+    }
+    return;
+  }
+  if (!object->AsGeometry()) {
+    return;
+  }
+
+  // Project a conservative box around each geometry's world bound. Using
+  // child bounds avoids the oversized sphere around an entire open book.
+  const auto &bound = object->worldBound;
+  if (!std::isfinite(bound.radius) || bound.radius <= 0.0f) {
+    return;
+  }
+  BookScreenBounds geometryBounds;
+  for (int corner = 0; corner < 8; ++corner) {
+    RE::NiPoint3 point = bound.center + RE::NiPoint3(
+        (corner & 1) ? bound.radius : -bound.radius,
+        (corner & 2) ? bound.radius : -bound.radius,
+        (corner & 4) ? bound.radius : -bound.radius);
+    float x, y, z;
+    if (!camera->WorldPtToScreenPt3(point, x, y, z, 1e-5f) ||
+        !std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z)) {
+      return;
+    }
+    // NiCamera screen coordinates start at the bottom left.
+    y = (1.0f - y) * displaySize.y;
+    geometryBounds.bottom = (std::max)(geometryBounds.bottom, y);
+  }
+  bounds.bottom = (std::max)(bounds.bottom, geometryBounds.bottom);
+  bounds.valid = true;
+}
+
+std::string GetPromptButton(bool gamepad, const Settings &settings) {
+  if (gamepad) {
+    switch (settings.controllerToggleButton) {
+    case 0x0001: return "D-Pad Up";
+    case 0x0002: return "D-Pad Down";
+    case 0x0004: return "D-Pad Left";
+    case 0x0008: return "D-Pad Right";
+    case 0x0010: return "Start";
+    case 0x0020: return "Back";
+    case 0x0040: return "LS";
+    case 0x0080: return "RS";
+    case 0x0100: return "LB";
+    case 0x0200: return "RB";
+    case 0x1000: return "A";
+    case 0x2000: return "B";
+    case 0x4000: return "X";
+    case 0x8000: return "Y";
+    default: return fmt::format("0x{:X}", settings.controllerToggleButton);
+    }
+  }
+  RE::BSFixedString name;
+  auto input = RE::BSInputDeviceManager::GetSingleton();
+  if (input && input->GetButtonNameFromID(RE::INPUT_DEVICE::kKeyboard,
+                                        settings.toggleKey, name) &&
+      !name.empty()) {
+    return name.c_str();
+  }
+  return fmt::format("Key {}", settings.toggleKey);
+}
+} // namespace
 
 Overlay *Overlay::GetSingleton() {
   static Overlay singleton;
@@ -14,6 +93,11 @@ Overlay *Overlay::GetSingleton() {
 void Overlay::Initialize() {
   SKSE::log::info("Initializing Overlay...");
   LoadFont();
+  auto settings = Settings::GetSingleton();
+  if (settings->overlayEnabled && settings->showBookPrompt) {
+    keyboardPromptIcon.Load(settings->toggleKey, false);
+    controllerPromptIcon.Load(settings->controllerToggleButton, true);
+  }
 }
 
 void Overlay::LoadFont() {
@@ -140,11 +224,87 @@ void Overlay::LoadFont() {
 }
 
 void Overlay::Render() {
+  auto settings = Settings::GetSingleton();
+  if (!settings->overlayEnabled ||
+      !MenuWatcher::GetSingleton()->IsBookMenuOpen()) {
+    return;
+  }
   if (!visible) {
+    if (settings->showBookPrompt) {
+      RenderBookPrompt();
+    }
     return;
   }
 
   RenderWindow();
+}
+
+void Overlay::RenderBookPrompt() {
+  auto settings = Settings::GetSingleton();
+  auto ui = RE::UI::GetSingleton();
+  auto menu = ui ? ui->GetMenu<RE::BookMenu>() : nullptr;
+  if (!menu || !menu->GetRuntimeData().bookInitialized) {
+    return;
+  }
+
+  const ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+  if (displaySize.x <= 0.0f || displaySize.y <= 0.0f) {
+    return;
+  }
+  const float scale = displaySize.y / 1080.0f;
+  const float fontSize = 24.0f * scale;
+  auto font = customFont ? customFont : ImGui::GetFont();
+  auto input = RE::BSInputDeviceManager::GetSingleton();
+  const bool gamepad = input && input->IsGamepadEnabled();
+  const auto &icon = gamepad ? controllerPromptIcon : keyboardPromptIcon;
+  const std::string button = GetPromptButton(gamepad, *settings);
+  constexpr auto label = "Show Text";
+  const ImVec2 buttonTextSize = font->CalcTextSizeA(
+      fontSize, (std::numeric_limits<float>::max)(), 0.0f, button.c_str());
+  const ImVec2 labelSize = font->CalcTextSizeA(
+      fontSize, (std::numeric_limits<float>::max)(), 0.0f, label);
+  const float badgeHeight = fontSize + 8.0f * scale;
+  const float badgeWidth = icon.GetTexture()
+                               ? badgeHeight * icon.GetAspectRatio()
+                               : (std::max)(badgeHeight, buttonTextSize.x + 16.0f * scale);
+  const float gap = 10.0f * scale;
+  const float width = badgeWidth + gap + labelSize.x;
+
+  ImVec2 position(displaySize.x * 0.5f, displaySize.y * 0.88f);
+  auto scene = RE::UI3DSceneManager::GetSingleton();
+  if (scene && scene->camera) {
+    BookScreenBounds bounds;
+    IncludeModelBounds(menu->GetRuntimeData().bookModel.get(),
+                       scene->camera.get(), displaySize, bounds);
+    if (bounds.valid) {
+      position.y = bounds.bottom + 12.0f * scale;
+    }
+  }
+  // Reserve the bottom strip for the game's Take/Exit/page controls.
+  const float margin = 16.0f * scale;
+  position.y = std::clamp(position.y, margin,
+                          (std::max)(margin, displaySize.y * 0.90f - badgeHeight));
+  position.x -= width * 0.5f;
+
+  auto draw = ImGui::GetForegroundDrawList();
+  const ImVec2 badgeEnd(position.x + badgeWidth, position.y + badgeHeight);
+  const float rounding = gamepad && button.size() == 1
+                             ? badgeHeight * 0.5f : 2.0f * scale;
+  const ImVec2 buttonPos(position.x + (badgeWidth - buttonTextSize.x) * 0.5f,
+                         position.y + (badgeHeight - buttonTextSize.y) * 0.5f);
+  if (icon.GetTexture()) {
+    draw->AddImage(reinterpret_cast<ImTextureID>(icon.GetTexture()), position, badgeEnd);
+  } else {
+    draw->AddRectFilled(position, badgeEnd, IM_COL32(0, 0, 0, 150), rounding);
+    draw->AddRect(position, badgeEnd, IM_COL32(255, 255, 255, 230), rounding,
+                  0, scale);
+    draw->AddText(font, fontSize, buttonPos, IM_COL32_WHITE, button.c_str());
+  }
+  const ImVec2 labelPos(badgeEnd.x + gap,
+                        position.y + (badgeHeight - labelSize.y) * 0.5f);
+  draw->AddText(font, fontSize, ImVec2(labelPos.x + scale, labelPos.y + scale),
+                IM_COL32(0, 0, 0, 230), label);
+  draw->AddText(font, fontSize, labelPos, IM_COL32_WHITE, label);
 }
 
 void Overlay::RenderWindow() {

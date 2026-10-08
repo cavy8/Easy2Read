@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BookPromptIcon.h"
 #include <imgui.h>
 #include <string>
 
@@ -38,6 +39,7 @@ private:
   Overlay &operator=(Overlay &&) = delete;
 
   void RenderWindow();
+  void RenderBookPrompt();
   void LoadFont();
 
   bool visible = false;
@@ -55,6 +57,8 @@ private:
   // ImGui font pointer
   ImFont *customFont = nullptr;
   int skyUIFrameRect = -1; // Extracted frame rectangle in the font atlas
+  BookPromptIcon keyboardPromptIcon;
+  BookPromptIcon controllerPromptIcon;
 };
 
 } // namespace Easy2Read

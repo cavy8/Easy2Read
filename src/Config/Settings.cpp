@@ -22,6 +22,7 @@ void Settings::Load() {
 
     // [General] - overlay and hotkey settings
     overlayEnabled = ini.GetBoolValue("General", "EnableOverlay", true);
+    showBookPrompt = ini.GetBoolValue("General", "ShowBookPrompt", true);
     toggleKey = static_cast<std::uint32_t>(
         ini.GetLongValue("General", "ToggleKey", 33));
     controllerToggleButton = static_cast<std::uint32_t>(

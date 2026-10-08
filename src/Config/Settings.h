@@ -38,6 +38,7 @@ public:
 
   // ---- Overlay ----
   bool overlayEnabled = true;   // Set to false to disable overlay entirely
+  bool showBookPrompt = true;  // Show the toggle button below the book model
   std::uint32_t toggleKey = 33; // F key (0x21)
   std::uint32_t controllerToggleButton =
       0x8000;                         // Y button on Xbox (0x8000 = 32768)

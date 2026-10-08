@@ -37,6 +37,7 @@ FetchContent_Declare(CommonLibSSE
 FetchContent_MakeAvailable(CommonLibSSE)
 include(${commonlibsse_SOURCE_DIR}/cmake/CommonLibSSE.cmake)
 find_package(imgui CONFIG REQUIRED)
+find_package(directxtk CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS SimpleIni.h REQUIRED)
 
 # ---- Source Files ----
@@ -51,6 +52,7 @@ set(SOURCES
     src/Utils/ImageMappings.cpp
     src/Utils/AliasResolver.cpp
     src/UI/Overlay.cpp
+    src/UI/BookPromptIcon.cpp
     src/UI/SkyUIFrame.cpp
     src/ImGui/imgui_impl_dx11.cpp
     src/ImGui/imgui_impl_win32.cpp
@@ -67,6 +69,7 @@ set(HEADERS
     src/Utils/ImageMappings.h
     src/Utils/AliasResolver.h
     src/UI/Overlay.h
+    src/UI/BookPromptIcon.h
     src/UI/SkyUIFrame.h
     src/UI/SkyUIFrameData.h
     src/ImGui/imgui_impl_dx11.h
@@ -105,6 +108,7 @@ target_precompile_headers(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         imgui::imgui
+        Microsoft::DirectXTK
         d3d11
         dxgi
 )

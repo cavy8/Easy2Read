@@ -5,6 +5,7 @@ All notable changes to Easy2Read will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Book-screen ImGui Icons button art with "Show Text", always horizontally centered on the screen and positioned vertically beneath projected book/note geometry bounds, with a lower-center fallback and `ShowBookPrompt` setting. Supports configured keyboard and Xbox controller bindings and installed icon style patches; missing artwork falls back to a text badge. Hides while the reading overlay is open.
 - Location alias names and unavailable reference alias names resolve from the current quest instance's stored text data.
 - PowerShell release script builds versioned mod-manager-ready main and theme zip files, with optional debug symbols and test labels.
 - Modern preset preserves the previous default theme.

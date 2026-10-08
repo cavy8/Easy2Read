@@ -11,6 +11,9 @@ When reading a book/note, press the F key (configurable) to pull up an overlay w
 1. Install [SKSE](https://skse.silverlock.org/) for your Skyrim version
 2. Install [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444) for your game version (SE for 1.5.x; AE for 1.6.x/1.7.x).
 3. Install `Easy2Read.dll` in `Data/SKSE/Plugins/` and copy the supplied `Data` contents into your game's `Data` directory.
+4. Install [ImGui Icons](https://www.nexusmods.com/skyrimspecialedition/mods/114790)
+   for the book-screen button artwork. Its replacement PNG style patches are
+   supported. Missing artwork falls back to a text badge.
 
 ### Runtime compatibility
 
@@ -22,9 +25,17 @@ Address Library.
 
 ### Book Overlay
 1. Open any book or note in Skyrim
+   A centered button icon followed by **Show Text** appears below the model,
+   matching the configured keyboard key or Xbox controller button.
 2. Press the toggle key (default: **F**) to display the overlay
 3. Scroll with your mouse wheel to read long texts
 4. Press the toggle key again or close the book to hide the overlay
+
+The prompt hides while the text overlay is open. It always stays horizontally centered
+on the screen; its height follows the model's projected bottom edge and stays above
+the bottom control strip. If bounds are unavailable,
+it falls back to the lower center of the screen. Very large models may overlap it
+when there is no room underneath. Set `ShowBookPrompt = false` to hide the prompt.
 
 ## Configuration
 
@@ -33,6 +44,7 @@ Address Library.
 ```ini
 [General]
 ToggleKey = 33  ; Hotkey scancode (default F = 33)
+ShowBookPrompt = true  ; Show the key/button hint on the book screen
 ```
 
 ### Easy2Read_Theme.ini
@@ -124,11 +136,12 @@ into your game. Re-running replaces archives with the same version and suffix.
 
 - [CommonLibSSE NG](https://github.com/alandtse/CommonLibSSE-NG/tree/ng) - SKSE plugin framework
 - [ImGui](https://github.com/ocornut/imgui) - Overlay rendering
+- [ImGui Icons](https://www.nexusmods.com/skyrimspecialedition/mods/114790) - Button artwork, loaded from the installed mod
+- [DirectX Tool Kit](https://github.com/microsoft/DirectXTK) - PNG texture loading
 - [SimpleIni](https://github.com/brofield/simpleini) - INI file parsing
 
 ## Future Plans
 
-- Show the key to press for the overlay in the book UI
 - Better foreign language support
 
 ## License
@@ -141,6 +154,7 @@ I can't stop you from doing anything you want with this. That said, I'd still ap
 
 - CommonLibSSE NG team for the SKSE framework
 - ImGui for the immediate-mode GUI library
+- powerofthree for ImGui Icons
 - SSE-ImGui project for D3D11 hooking reference
 - OpenDyslexic font
 - mjorka for Sovngarde font

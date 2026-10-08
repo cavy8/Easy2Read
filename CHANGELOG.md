@@ -5,6 +5,7 @@ All notable changes to Easy2Read will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- Book line breaks match the game. Vanilla book text uses CRLF line endings, and each `\r\n` was counted as two breaks, so title pages and verse showed a blank line between every line. Trailing spaces before a line break are also removed.
 - Alias tags match quest alias names case-insensitively, as the game does. The engine's shared string cache keeps the first-loaded spelling (e.g. Skyrim.esm's `Questgiver`), so Missives' `<Alias=QuestGiver>` and `<Alias=Recipient>` were reported as missing from their quest.
 - Stored actor/reference alias names use reference display names or base-object names; generic form-name lookup returns empty for references. Unresolved aliases now log their quest, instance and missing stored-form details at warning level.
 - Open notes resolve aliases using their stored owning quest and quest instance, with stored names taking priority over live aliases. Older missives no longer depend on the quest's current run. Titles use the note's display name, and unresolved body aliases remain visible instead of disappearing.

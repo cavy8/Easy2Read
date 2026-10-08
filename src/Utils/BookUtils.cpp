@@ -212,8 +212,18 @@ std::string BookUtils::NormalizeWhitespace(const std::string &text) {
   bool lastWasNewline = false;
   int consecutiveNewlines = 0;
 
-  for (char c : text) {
+  for (size_t i = 0; i < text.size(); ++i) {
+    char c = text[i];
+    // Book text is authored with CRLF line endings; count "\r\n" as one break,
+    // otherwise every single line break becomes a blank line.
+    if (c == '\r' && i + 1 < text.size() && text[i + 1] == '\n') {
+      continue;
+    }
     if (c == '\n' || c == '\r') {
+      // Drop trailing spaces before a line break ("by \r\n" -> "by\n")
+      if (lastWasSpace && !result.empty() && result.back() == ' ') {
+        result.pop_back();
+      }
       if (!lastWasNewline) {
         consecutiveNewlines = 1;
         lastWasNewline = true;

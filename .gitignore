@@ -3,6 +3,7 @@ build/
 build-vs/
 build-new/
 out/
+dist/
 cmake-build-*/
 
 # CMake

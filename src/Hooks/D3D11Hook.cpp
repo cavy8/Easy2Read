@@ -151,6 +151,7 @@ void D3D11Hook::RenderImGui() {
   }
 
   ImGuiContextScope scope(imguiContext);
+  Overlay::GetSingleton()->RefreshResources();
   ImGui_ImplDX11_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();

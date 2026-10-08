@@ -3,6 +3,7 @@
 #include "MenuWatcher.h"
 #include "PCH.h"
 #include "UI/Overlay.h"
+#include "UI/MenuFramework.h"
 #include "Utils/BookUtils.h"
 
 namespace Easy2Read {
@@ -33,7 +34,7 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
     RE::InputEvent *const *a_event,
     [[maybe_unused]] RE::BSTEventSource<RE::InputEvent *> *a_eventSource) {
 
-  if (!a_event) {
+  if (!a_event || MenuFramework::IsInputCaptured()) {
     return RE::BSEventNotifyControl::kContinue;
   }
 

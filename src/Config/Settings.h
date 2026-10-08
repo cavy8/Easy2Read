@@ -27,7 +27,10 @@ public:
   [[nodiscard]] static Settings *GetSingleton();
 
   void Load();
-  void LoadTheme();
+  bool LoadGeneral();
+  bool LoadTheme();
+  [[nodiscard]] bool SaveGeneral() const;
+  [[nodiscard]] bool SaveTheme() const;
 
   // Get the resolved font file path based on current preset
   [[nodiscard]] std::string GetFontPath() const;
@@ -123,6 +126,7 @@ public:
   float scrollbarThumbAlpha = 1.0f; // Scrollbar thumb transparency
 
 private:
+  [[nodiscard]] bool Save(bool general) const;
   Settings() = default;
   Settings(const Settings &) = delete;
   Settings(Settings &&) = delete;

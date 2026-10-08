@@ -1,5 +1,8 @@
 #include "Settings.h"
 #include "PCH.h"
+#include "SettingsSchema.h"
+#include <cmath>
+#include <type_traits>
 
 namespace Easy2Read {
 
@@ -9,6 +12,11 @@ Settings *Settings::GetSingleton() {
 }
 
 void Settings::Load() {
+  LoadGeneral();
+  LoadTheme();
+}
+
+bool Settings::LoadGeneral() {
   constexpr auto path = L"Data/SKSE/Plugins/Easy2Read.ini";
 
   CSimpleIniA ini;
@@ -16,7 +24,8 @@ void Settings::Load() {
 
   const auto rc = ini.LoadFile(path);
   if (rc < 0) {
-    SKSE::log::warn("Easy2Read.ini not found, using defaults");
+    SKSE::log::warn("Cannot load Easy2Read.ini; keeping current settings");
+    return false;
   } else {
     SKSE::log::info("Loading configuration from Easy2Read.ini");
 
@@ -34,12 +43,66 @@ void Settings::Load() {
         overlayEnabled ? "enabled" : "disabled", toggleKey,
         controllerToggleButton, controllerScrollSpeed);
   }
-
-  // Load theming from separate file
-  LoadTheme();
+  return true;
 }
 
-void Settings::LoadTheme() {
+bool Settings::SaveGeneral() const { return Save(true); }
+bool Settings::SaveTheme() const { return Save(false); }
+
+bool Settings::Save(bool general) const {
+  const auto path = general ? L"Data/SKSE/Plugins/Easy2Read.ini"
+                            : L"Data/SKSE/Plugins/Easy2Read_Theme.ini";
+  CSimpleIniA ini;
+  ini.SetUnicode();
+  // Retain comments and keys belonging to users or future versions.
+  if (ini.LoadFile(path) < 0 && std::filesystem::exists(path)) {
+    logger::error("Cannot read {} for saving", general ? "Easy2Read.ini" : "Easy2Read_Theme.ini");
+    return false;
+  }
+  for (const auto &field : settingFields) {
+    if (field.IsGeneral() != general) {
+      continue;
+    }
+    const auto result = std::visit([&](auto member) -> SI_Error {
+      const auto &value = this->*member;
+      using T = std::decay_t<decltype(value)>;
+      if constexpr (std::is_same_v<T, bool>) {
+        return ini.SetBoolValue(field.section, field.key, value);
+      } else if constexpr (std::is_same_v<T, std::string>) {
+        return ini.SetValue(field.section, field.key, value.c_str());
+      } else if constexpr (std::is_same_v<T, FontPreset>) {
+        return ini.SetValue(field.section, field.key, fontPresetNames[static_cast<int>(value)]);
+      } else if constexpr (std::is_same_v<T, LanguageSupport>) {
+        return ini.SetValue(field.section, field.key, languageSupportNames[static_cast<int>(value)]);
+      } else if constexpr (std::is_same_v<T, float>) {
+        if (std::string_view(field.section) == "Transparency") {
+          return ini.SetLongValue(field.section, field.key, static_cast<long>(std::lround(value * 100.0f)));
+        }
+        return ini.SetDoubleValue(field.section, field.key, value);
+      } else {
+        return ini.SetLongValue(field.section, field.key, static_cast<long>(value));
+      }
+    }, field.member);
+    if (result < 0) {
+      logger::error("Cannot serialize setting {}/{}", field.section, field.key);
+      return false;
+    }
+  }
+  const auto temporary = std::filesystem::path(path).wstring() + L".tmp";
+  const auto result = ini.SaveFile(temporary.c_str());
+  if (result < 0 || !MoveFileExW(temporary.c_str(), path,
+                                 MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+    const auto windowsError = result < 0 ? 0UL : GetLastError();
+    logger::error("Cannot save {} (INI error {}, Windows error {})",
+                  general ? "Easy2Read.ini" : "Easy2Read_Theme.ini", result, windowsError);
+    std::error_code ignored;
+    std::filesystem::remove(temporary, ignored);
+    return false;
+  }
+  return true;
+}
+
+bool Settings::LoadTheme() {
   constexpr auto themePath = L"Data/SKSE/Plugins/Easy2Read_Theme.ini";
 
   CSimpleIniA ini;
@@ -47,8 +110,8 @@ void Settings::LoadTheme() {
 
   const auto rc = ini.LoadFile(themePath);
   if (rc < 0) {
-    SKSE::log::warn("Easy2Read_Theme.ini not found, using default theme");
-    return;
+    SKSE::log::warn("Cannot load Easy2Read_Theme.ini; keeping current theme");
+    return false;
   }
 
   SKSE::log::info("Loading theme from Easy2Read_Theme.ini");
@@ -187,6 +250,7 @@ void Settings::LoadTheme() {
   SKSE::log::info(
       "  Visibility: Title={}, Separator={}, Border={}, ScrollbarTrack={}",
       showTitle, showSeparator, showBorder, showScrollbarTrack);
+  return true;
 }
 
 std::string Settings::GetFontPath() const {

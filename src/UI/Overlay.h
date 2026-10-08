@@ -3,6 +3,7 @@
 #include "BookPromptIcon.h"
 #include <imgui.h>
 #include <string>
+#include <atomic>
 
 namespace Easy2Read {
 
@@ -12,6 +13,11 @@ public:
 
   // Initialize the overlay (load fonts, etc.)
   void Initialize();
+  void RequestResourceRefresh(bool fonts = true) {
+    if (fonts) fontRefreshPending.store(true);
+    resourceRefreshPending.store(true);
+  }
+  void RefreshResources(); // Called with our context current, before NewFrame.
 
   // Main render function - called every frame by D3D11Hook
   void Render();
@@ -44,6 +50,8 @@ private:
 
   bool visible = false;
   bool fontLoaded = false;
+  std::atomic<bool> resourceRefreshPending{false};
+  std::atomic<bool> fontRefreshPending{false};
 
   std::string bookTitle;
   std::string bookText;

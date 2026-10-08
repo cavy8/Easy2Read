@@ -10,6 +10,7 @@ All notable changes to Easy2Read will be documented in this file.
 - Open notes resolve aliases using their stored owning quest and quest instance, with stored names taking priority over live aliases. Older missives no longer depend on the quest's current run. Titles use the note's display name, and unresolved body aliases remain visible instead of disappearing.
 
 ### Added
+- Optional SKSE Menu Framework 3 General and Theme pages for all INI settings, with native keyboard/controller binding pickers, grouped color pickers, font selectors, visibility controls, and sliders with units. Per-file save/reload retains comments and unknown keys; font and prompt changes refresh during play.
 - Book-screen ImGui Icons button art with "Show Text", always horizontally centered on the screen and positioned vertically beneath projected book/note geometry bounds, with a lower-center fallback and `ShowBookPrompt` setting. Supports configured keyboard and Xbox controller bindings and installed icon style patches; missing artwork falls back to a text badge. Hides while the reading overlay is open.
 - Location alias names and unavailable reference alias names resolve from the current quest instance's stored text data.
 - PowerShell release script builds versioned mod-manager-ready main and theme zip files, with optional debug symbols and test labels.

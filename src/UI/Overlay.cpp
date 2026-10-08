@@ -1,6 +1,8 @@
 #include "Overlay.h"
 #include "SkyUIFrame.h"
 #include "Config/Settings.h"
+#include "ImGui/imgui_impl_dx11.h"
+#include "OverlayControl.h"
 #include "Hooks/MenuWatcher.h"
 #include "PCH.h"
 #include <cmath>
@@ -8,6 +10,10 @@
 #include <imgui.h>
 
 namespace Easy2Read {
+void RequestOverlayResourceRefresh(bool fonts) {
+  Overlay::GetSingleton()->RequestResourceRefresh(fonts);
+}
+void HideReadingOverlay() { Overlay::GetSingleton()->Hide(); }
 namespace {
 struct BookScreenBounds {
   float bottom = std::numeric_limits<float>::lowest();
@@ -223,6 +229,27 @@ void Overlay::LoadFont() {
   }
 }
 
+void Overlay::RefreshResources() {
+  if (!resourceRefreshPending.exchange(false)) {
+    return;
+  }
+  if (fontRefreshPending.exchange(false)) {
+    ImGui_ImplDX11_InvalidateDeviceObjects();
+    ImGui::GetIO().Fonts->Clear();
+    customFont = nullptr;
+    fontLoaded = false;
+    skyUIFrameRect = -1;
+    LoadFont();
+  }
+  keyboardPromptIcon = BookPromptIcon{};
+  controllerPromptIcon = BookPromptIcon{};
+  const auto settings = Settings::GetSingleton();
+  if (settings->overlayEnabled && settings->showBookPrompt) {
+    keyboardPromptIcon.Load(settings->toggleKey, false);
+    controllerPromptIcon.Load(settings->controllerToggleButton, true);
+  }
+}
+
 void Overlay::Render() {
   auto settings = Settings::GetSingleton();
   if (!settings->overlayEnabled ||
@@ -256,6 +283,9 @@ void Overlay::RenderBookPrompt() {
   auto font = customFont ? customFont : ImGui::GetFont();
   auto input = RE::BSInputDeviceManager::GetSingleton();
   const bool gamepad = input && input->IsGamepadEnabled();
+  if ((gamepad ? settings->controllerToggleButton : settings->toggleKey) == 0) {
+    return;
+  }
   const auto &icon = gamepad ? controllerPromptIcon : keyboardPromptIcon;
   const std::string button = GetPromptButton(gamepad, *settings);
   constexpr auto label = "Show Text";

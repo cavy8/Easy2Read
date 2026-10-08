@@ -44,6 +44,7 @@ find_path(SIMPLEINI_INCLUDE_DIRS SimpleIni.h REQUIRED)
 set(SOURCES
     src/main.cpp
     src/Config/Settings.cpp
+    src/UI/MenuFramework.cpp
     src/Hooks/MenuWatcher.cpp
     src/Hooks/InputHandler.cpp
     src/Hooks/D3D11Hook.cpp
@@ -61,6 +62,10 @@ set(SOURCES
 set(HEADERS
     src/PCH.h
     src/Config/Settings.h
+    src/Config/SettingsSchema.h
+    src/UI/MenuFramework.h
+    src/UI/MenuBindings.h
+    src/UI/OverlayControl.h
     src/Hooks/MenuWatcher.h
     src/Hooks/InputHandler.h
     src/Hooks/D3D11Hook.h
@@ -114,6 +119,15 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC CommonLibSSE::CommonLibSSE)
+
+# Opt-in persistence check; does not load Skyrim or install the plugin.
+add_executable(SettingsPersistence EXCLUDE_FROM_ALL
+    tests/SettingsPersistence.cpp src/Config/Settings.cpp)
+target_include_directories(SettingsPersistence PRIVATE src ${SIMPLEINI_INCLUDE_DIRS})
+target_link_libraries(SettingsPersistence PRIVATE CommonLibSSE::CommonLibSSE)
+if(MSVC)
+    target_compile_options(SettingsPersistence PRIVATE /utf-8 /EHsc)
+endif()
 
 # ---- Post-build: Copy to Skyrim mods folder (if environment variable is set) ----
 if(DEFINED ENV{SKYRIM_MODS_FOLDER})

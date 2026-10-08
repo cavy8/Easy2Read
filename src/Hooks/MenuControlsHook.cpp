@@ -3,6 +3,7 @@
 #include "MenuWatcher.h"
 #include "PCH.h"
 #include "UI/Overlay.h"
+#include "UI/MenuFramework.h"
 
 namespace Easy2Read {
 
@@ -16,7 +17,7 @@ RE::BSEventNotifyControl MenuControlsHook::ProcessEvent_Hook(
 
   // Only block inputs when overlay is visible AND book menu is open
   bool shouldBlock = overlay && overlay->IsVisible() && menuWatcher &&
-                     menuWatcher->IsBookMenuOpen();
+                     menuWatcher->IsBookMenuOpen() && !MenuFramework::IsInputCaptured();
 
   if (shouldBlock && a_event) {
     // Iterate through the event chain and process/block inputs

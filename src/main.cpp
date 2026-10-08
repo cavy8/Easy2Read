@@ -5,6 +5,7 @@
 #include "Hooks/MenuWatcher.h"
 #include "PCH.h"
 #include "UI/Overlay.h"
+#include "UI/MenuFramework.h"
 #include "Utils/ImageMappings.h"
 
 namespace {
@@ -40,6 +41,7 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg) {
   switch (a_msg->type) {
   case SKSE::MessagingInterface::kDataLoaded:
     logger::info("Data loaded - initializing");
+    Easy2Read::MenuFramework::Register();
 
     // Load image-to-text mappings
     Easy2Read::ImageMappings::GetSingleton()->LoadMappings();

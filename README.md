@@ -39,6 +39,15 @@ when there is no room underneath. Set `ShowBookPrompt = false` to hide the promp
 
 ## Configuration
 
+### Optional in-game settings
+
+Install [SKSE Menu Framework 3](https://github.com/QTR-Modding/SKSE-Menu-Framework-3)
+and its requirements to add **Easy2Read > General** and **Easy2Read > Theme**
+to its Mod Control Panel. Easy2Read also works without the framework.
+
+Cleared bindings use `0` in the INI and hide the prompt for that device. Bindings
+the framework cannot represent remain intact until reassigned or explicitly cleared.
+
 ### Easy2Read.ini
 
 ```ini
@@ -106,6 +115,19 @@ cmake --build --preset release
 
 The built DLL will be in `build/Release/Easy2Read.dll`.
 
+The optional settings check runs without Skyrim in an isolated directory:
+
+```powershell
+cmake --build build --config Release --target SettingsPersistence
+build/Release/SettingsPersistence.exe . build/settings-test-data
+```
+
+It checks shipped INI/preset coverage, save/reload isolation, comment preservation,
+save failures, binding conversions, and color picker coverage. In-game checks:
+open both Easy2Read pages, assign keyboard/controller bindings, change fonts and
+colors with a book open, save/reload each file, restart to check persistence, and
+also launch without SKSE Menu Framework.
+
 ### Build release archives
 
 From the repository folder, run:
@@ -139,6 +161,7 @@ into your game. Re-running replaces archives with the same version and suffix.
 - [ImGui Icons](https://www.nexusmods.com/skyrimspecialedition/mods/114790) - Button artwork, loaded from the installed mod
 - [DirectX Tool Kit](https://github.com/microsoft/DirectXTK) - PNG texture loading
 - [SimpleIni](https://github.com/brofield/simpleini) - INI file parsing
+- [SKSE Menu Framework 3](https://github.com/QTR-Modding/SKSE-Menu-Framework-3) - Optional in-game settings; API source and license details are in `src/ThirdParty/README.md`
 
 ## Future Plans
 

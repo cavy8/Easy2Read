@@ -22,8 +22,30 @@ std::string AliasResolver::ResolveAliases(const std::string &text,
     return text;
   }
 
-  // Find the quest that has this book as an alias
-  RE::TESQuest *owningQuest = FindQuestForBook(book);
+  RE::TESQuest *owningQuest = nullptr;
+  std::optional<std::uint32_t> instanceID;
+  auto *ui = RE::UI::GetSingleton();
+  if (ui && ui->IsMenuOpen(RE::BookMenu::MENU_NAME) &&
+      RE::BookMenu::GetTargetForm() == book) {
+    auto *displayData = RE::BookMenu::GetDisplayData();
+    if (!displayData) {
+      if (auto *extraList = RE::BookMenu::GetExtraList()) {
+        displayData = extraList->GetByType<RE::ExtraTextDisplayData>();
+      }
+    }
+    if (displayData && displayData->ownerQuest) {
+      owningQuest = displayData->ownerQuest;
+      auto storedInstance = static_cast<std::int32_t>(displayData->ownerInstance.get());
+      if (storedInstance >= 0) {
+        instanceID = static_cast<std::uint32_t>(storedInstance);
+      }
+      SKSE::log::info("AliasResolver: Note context quest {:08X}, instance {}",
+                      owningQuest->GetFormID(), storedInstance);
+    }
+  }
+  if (!owningQuest) {
+    owningQuest = FindQuestForBook(book);
+  }
   if (!owningQuest) {
     SKSE::log::debug("AliasResolver: No quest found for book '{}'",
                      book->GetName());
@@ -52,7 +74,7 @@ std::string AliasResolver::ResolveAliases(const std::string &text,
     RE::BGSBaseAlias *alias = FindAliasInQuest(owningQuest, aliasName);
 
     if (alias) {
-      std::string resolvedName = ResolveAliasName(alias);
+      std::string resolvedName = ResolveAliasName(alias, instanceID);
       if (!resolvedName.empty()) {
         SKSE::log::info("AliasResolver: Resolved <Alias={}> -> '{}'", aliasName,
                         resolvedName);
@@ -60,13 +82,17 @@ std::string AliasResolver::ResolveAliases(const std::string &text,
       } else {
         // Couldn't resolve, keep original tag
         processedResult.append(match[0].str());
-        SKSE::log::debug("AliasResolver: Alias '{}' not filled", aliasName);
+        SKSE::log::warn("AliasResolver: Alias '{}' unresolved in quest {:08X}, "
+                        "selected instance {}, current instance {}",
+                        aliasName, owningQuest->GetFormID(),
+                        instanceID.value_or(owningQuest->currentInstanceID),
+                        owningQuest->currentInstanceID);
       }
     } else {
       // Alias not found in quest, keep original tag
       processedResult.append(match[0].str());
-      SKSE::log::debug("AliasResolver: Alias '{}' not found in quest",
-                       aliasName);
+      SKSE::log::warn("AliasResolver: Alias '{}' not found in quest {:08X}",
+                      aliasName, owningQuest->GetFormID());
     }
 
     lastPos = matchPos + match.length(0);
@@ -153,8 +179,9 @@ AliasResolver::FindAliasInQuest(RE::TESQuest *quest,
       continue;
     }
 
-    const char *name = alias->aliasName.c_str();
-    if (name && aliasName == name) {
+    // The engine's string cache ignores case and keeps the first-loaded
+    // spelling (Skyrim.esm's "Questgiver" over a mod's "QuestGiver").
+    if (alias->aliasName == std::string_view(aliasName)) {
       return alias;
     }
   }
@@ -162,12 +189,52 @@ AliasResolver::FindAliasInQuest(RE::TESQuest *quest,
   return nullptr;
 }
 
-std::string AliasResolver::ResolveAliasName(RE::BGSBaseAlias *alias) {
+std::string AliasResolver::ResolveAliasName(
+    RE::BGSBaseAlias *alias, std::optional<std::uint32_t> instanceID) {
   if (!alias) {
     return "";
   }
 
-  // Try to cast to reference alias (most common type)
+  // Stored text belongs to the particular note, even after its quest restarts.
+  if (auto *quest = alias->owningQuest) {
+    const auto selectedInstance = instanceID.value_or(quest->currentInstanceID);
+    for (auto *instance : quest->instanceData) {
+      if (!instance || instance->id != selectedInstance) {
+        continue;
+      }
+      for (const auto &entry : instance->stringData) {
+        if (entry.aliasID != alias->aliasID) {
+          continue;
+        }
+        auto *form = RE::TESForm::LookupByID(entry.fullNameFormID);
+        // Actor/reference forms do not inherit TESFullName: TESForm::GetName()
+        // returns empty for them, even though their base or display name exists.
+        const char *name = nullptr;
+        if (auto *ref = form ? form->As<RE::TESObjectREFR>() : nullptr) {
+          name = ref->GetDisplayFullName();
+          if (!name || name[0] == '\0') {
+            name = ref->GetName();
+          }
+        } else if (form) {
+          name = form->GetName();
+        }
+        if (name && name[0] != '\0') {
+          return name;
+        }
+        SKSE::log::warn("AliasResolver: Stored alias '{}' form {:08X} "
+                        "has no name (form found: {}, instance {})",
+                        alias->aliasName.c_str(), entry.fullNameFormID,
+                        form != nullptr, selectedInstance);
+      }
+      break;
+    }
+    // Live aliases from a later run cannot fill an older note correctly.
+    if (instanceID && *instanceID != quest->currentInstanceID) {
+      return "";
+    }
+  }
+
+  // Live reference names remain a fallback for the current quest instance.
   if (auto *refAlias = skyrim_cast<RE::BGSRefAlias *>(alias)) {
     auto *ref = refAlias->GetReference();
     if (ref) {
@@ -183,29 +250,6 @@ std::string AliasResolver::ResolveAliasName(RE::BGSBaseAlias *alias) {
           return name;
         }
       }
-    }
-  }
-
-  // Quest text stores named forms by alias ID, including locations. Use only
-  // the current instance so a restarted radiant quest cannot reuse old names.
-  if (auto *quest = alias->owningQuest) {
-    for (auto *instance : quest->instanceData) {
-      if (!instance || instance->id != quest->currentInstanceID) {
-        continue;
-      }
-
-      for (const auto &entry : instance->stringData) {
-        if (entry.aliasID != alias->aliasID) {
-          continue;
-        }
-
-        auto *form = RE::TESForm::LookupByID(entry.fullNameFormID);
-        const char *name = form ? form->GetName() : nullptr;
-        if (name && name[0] != '\0') {
-          return name;
-        }
-      }
-      break;
     }
   }
 

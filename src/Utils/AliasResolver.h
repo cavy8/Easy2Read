@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
+#include <optional>
 
 namespace RE {
 class TESObjectBOOK;
@@ -16,7 +18,8 @@ public:
 
   /**
    * Resolve all <Alias=...> tags in the input string.
-   * Finds the quest that owns this book, then resolves aliases from that quest.
+   * Uses the opened note's stored quest and instance when available, otherwise
+   * finds the quest that owns this book.
    *
    * @param text The input text potentially containing alias tags
    * @param book The book being displayed (required to find owning quest)
@@ -52,13 +55,15 @@ private:
                                      const std::string &aliasName);
 
   /**
-   * Resolve an alias to its live display name or current quest instance name.
+   * Resolve an alias using the note's stored instance before live names.
    * Location aliases require a stored name in the quest's instance text data.
    *
    * @param alias The alias to resolve
    * @return The display name, or empty string if unresolved
    */
-  std::string ResolveAliasName(RE::BGSBaseAlias *alias);
+  std::string ResolveAliasName(
+      RE::BGSBaseAlias *alias,
+      std::optional<std::uint32_t> instanceID = std::nullopt);
 };
 
 } // namespace Easy2Read

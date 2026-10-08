@@ -2,6 +2,7 @@
 #include "AliasResolver.h"
 #include "ImageMappings.h"
 #include "PCH.h"
+#include <cstring>
 
 namespace Easy2Read {
 
@@ -11,6 +12,16 @@ std::string BookUtils::GetBookTitle(RE::TESObjectBOOK *book) {
   }
 
   const char *name = book->GetName();
+  auto *ui = RE::UI::GetSingleton();
+  if (ui && ui->IsMenuOpen(RE::BookMenu::MENU_NAME) &&
+      RE::BookMenu::GetTargetForm() == book) {
+    if (auto *displayData = RE::BookMenu::GetDisplayData()) {
+      const char *displayName = displayData->GetDisplayName(book, 1.0f);
+      if (displayName && displayName[0] != '\0') {
+        name = displayName;
+      }
+    }
+  }
   std::string title = name ? name : "";
 
   auto *aliasResolver = AliasResolver::GetSingleton();
@@ -102,6 +113,16 @@ std::string BookUtils::StripMarkup(const std::string &text) {
     }
 
     if (c == '<') {
+      // An unresolved alias is text, not HTML. Keep it visible for diagnosis.
+      if (i + 7 <= text.size() &&
+          _strnicmp(text.c_str() + i, "<Alias=", 7) == 0) {
+        const auto tagEnd = text.find('>', i);
+        if (tagEnd != std::string::npos) {
+          result.append(text, i, tagEnd - i + 1);
+          i = tagEnd;
+          continue;
+        }
+      }
       // Check for img tag
       if (i + 4 < text.size()) {
         std::string tagCheck = text.substr(i, 4);

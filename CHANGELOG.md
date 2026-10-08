@@ -4,6 +4,11 @@ All notable changes to Easy2Read will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- Alias tags match quest alias names case-insensitively, as the game does. The engine's shared string cache keeps the first-loaded spelling (e.g. Skyrim.esm's `Questgiver`), so Missives' `<Alias=QuestGiver>` and `<Alias=Recipient>` were reported as missing from their quest.
+- Stored actor/reference alias names use reference display names or base-object names; generic form-name lookup returns empty for references. Unresolved aliases now log their quest, instance and missing stored-form details at warning level.
+- Open notes resolve aliases using their stored owning quest and quest instance, with stored names taking priority over live aliases. Older missives no longer depend on the quest's current run. Titles use the note's display name, and unresolved body aliases remain visible instead of disappearing.
+
 ### Added
 - Book-screen ImGui Icons button art with "Show Text", always horizontally centered on the screen and positioned vertically beneath projected book/note geometry bounds, with a lower-center fallback and `ShowBookPrompt` setting. Supports configured keyboard and Xbox controller bindings and installed icon style patches; missing artwork falls back to a text badge. Hides while the reading overlay is open.
 - Location alias names and unavailable reference alias names resolve from the current quest instance's stored text data.

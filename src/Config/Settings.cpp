@@ -5,6 +5,21 @@
 #include <type_traits>
 
 namespace Easy2Read {
+namespace {
+constexpr auto userThemePath = L"Data/SKSE/Plugins/Easy2Read_Theme.ini";
+constexpr auto themeDirectory = L"Data/SKSE/Plugins/Easy2Read/Themes";
+constexpr auto defaultThemeName = "Default";
+
+std::string ToUtf8(const std::filesystem::path &path) {
+  const auto text = path.u8string();
+  return {text.begin(), text.end()};
+}
+
+std::filesystem::path ThemePresetPath(const std::string &name) {
+  return std::filesystem::path(themeDirectory) /
+         std::u8string(name.begin(), name.end()).append(u8".ini");
+}
+} // namespace
 
 Settings *Settings::GetSingleton() {
   static Settings singleton;
@@ -50,12 +65,15 @@ bool Settings::SaveGeneral() const { return Save(true); }
 bool Settings::SaveTheme() const { return Save(false); }
 
 bool Settings::Save(bool general) const {
-  const auto path = general ? L"Data/SKSE/Plugins/Easy2Read.ini"
-                            : L"Data/SKSE/Plugins/Easy2Read_Theme.ini";
+  const std::filesystem::path path =
+      general ? L"Data/SKSE/Plugins/Easy2Read.ini" : userThemePath;
   CSimpleIniA ini;
   ini.SetUnicode();
-  // Retain comments and keys belonging to users or future versions.
-  if (ini.LoadFile(path) < 0 && std::filesystem::exists(path)) {
+  // Retain comments and keys belonging to users or future versions. A new
+  // theme file starts from the Default preset so it carries its comments.
+  const bool exists = std::filesystem::exists(path);
+  const auto source = exists || general ? path : ThemePresetPath(defaultThemeName);
+  if (ini.LoadFile(source.c_str()) < 0 && exists) {
     logger::error("Cannot read {} for saving", general ? "Easy2Read.ini" : "Easy2Read_Theme.ini");
     return false;
   }
@@ -88,9 +106,9 @@ bool Settings::Save(bool general) const {
       return false;
     }
   }
-  const auto temporary = std::filesystem::path(path).wstring() + L".tmp";
+  const auto temporary = path.wstring() + L".tmp";
   const auto result = ini.SaveFile(temporary.c_str());
-  if (result < 0 || !MoveFileExW(temporary.c_str(), path,
+  if (result < 0 || !MoveFileExW(temporary.c_str(), path.c_str(),
                                  MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
     const auto windowsError = result < 0 ? 0UL : GetLastError();
     logger::error("Cannot save {} (INI error {}, Windows error {})",
@@ -103,18 +121,53 @@ bool Settings::Save(bool general) const {
 }
 
 bool Settings::LoadTheme() {
-  constexpr auto themePath = L"Data/SKSE/Plugins/Easy2Read_Theme.ini";
+  std::error_code error;
+  if (std::filesystem::exists(userThemePath, error)) {
+    return LoadThemeFile(userThemePath);
+  }
+  SKSE::log::info("No Easy2Read_Theme.ini; using the {} theme preset",
+                  defaultThemeName);
+  return LoadThemePreset(defaultThemeName);
+}
 
+bool Settings::LoadThemePreset(const std::string &name) {
+  return LoadThemeFile(ThemePresetPath(name));
+}
+
+std::vector<std::string> Settings::ListThemePresets() {
+  std::vector<std::string> names;
+  std::error_code error;
+  std::filesystem::directory_iterator it(themeDirectory, error), end;
+  while (!error && it != end) {
+    if (it->is_regular_file(error) &&
+        _wcsicmp(it->path().extension().c_str(), L".ini") == 0) {
+      names.push_back(ToUtf8(it->path().stem()));
+    }
+    it.increment(error);
+  }
+  std::ranges::sort(names, [](const std::string &a, const std::string &b) {
+    const bool aDefault = _stricmp(a.c_str(), defaultThemeName) == 0;
+    const bool bDefault = _stricmp(b.c_str(), defaultThemeName) == 0;
+    if (aDefault != bDefault) {
+      return aDefault;
+    }
+    return _stricmp(a.c_str(), b.c_str()) < 0;
+  });
+  return names;
+}
+
+bool Settings::LoadThemeFile(const std::filesystem::path &themePath) {
+  const auto themeName = ToUtf8(themePath.filename());
   CSimpleIniA ini;
   ini.SetUnicode();
 
-  const auto rc = ini.LoadFile(themePath);
+  const auto rc = ini.LoadFile(themePath.c_str());
   if (rc < 0) {
-    SKSE::log::warn("Cannot load Easy2Read_Theme.ini; keeping current theme");
+    SKSE::log::warn("Cannot load {}; keeping current theme", themeName);
     return false;
   }
 
-  SKSE::log::info("Loading theme from Easy2Read_Theme.ini");
+  SKSE::log::info("Loading theme from {}", themeName);
 
   // [Font]
   const char *fontPresetStr = ini.GetValue("Font", "FontPreset", "Barlow");

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
+#include <vector>
 
 namespace Easy2Read {
 
@@ -28,9 +30,16 @@ public:
 
   void Load();
   bool LoadGeneral();
+  // Loads the user's Easy2Read_Theme.ini, or the Default preset without one.
   bool LoadTheme();
+  // Applies a preset from the Themes folder; the user's theme file is untouched
+  // until SaveTheme.
+  bool LoadThemePreset(const std::string &name);
   [[nodiscard]] bool SaveGeneral() const;
   [[nodiscard]] bool SaveTheme() const;
+
+  // Preset names (file stems, UTF-8) in the Themes folder, Default first.
+  [[nodiscard]] static std::vector<std::string> ListThemePresets();
 
   // Get the resolved font file path based on current preset
   [[nodiscard]] std::string GetFontPath() const;
@@ -127,6 +136,7 @@ public:
 
 private:
   [[nodiscard]] bool Save(bool general) const;
+  bool LoadThemeFile(const std::filesystem::path &path);
   Settings() = default;
   Settings(const Settings &) = delete;
   Settings(Settings &&) = delete;

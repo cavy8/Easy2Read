@@ -56,17 +56,29 @@ ToggleKey = 33  ; Hotkey scancode (default F = 33)
 ShowBookPrompt = true  ; Show the key/button hint on the book screen
 ```
 
-### Easy2Read_Theme.ini
+### Themes
+
+Theme presets are the `.ini` files in `SKSE/Plugins/Easy2Read/Themes`:
+**Default**, **Modern**, and **Untarnished UI**. Your own theme is
+`SKSE/Plugins/Easy2Read_Theme.ini`. It isn't included in the download, so
+updating Easy2Read never overwrites it. Without it, the Default preset is used.
+
+With SKSE Menu Framework, pick a preset from **Easy2Read > Theme > Theme preset**
+to apply it live, then press **Save INI** to keep it as your theme. Saving only
+writes `Easy2Read_Theme.ini`; preset files are never modified. With MO2, the new
+file appears in Overwrite. Without the framework, copy a preset to
+`SKSE/Plugins/Easy2Read_Theme.ini` and edit it.
+
+To add a preset, put a theme `.ini` in the `Themes` folder (its file name is the
+preset name) and press **Refresh theme list**. Keys a preset omits keep their
+current values.
 
 The default theme follows SkyUI/Vanilla menus: translucent black, white text,
 centered titles, the original SkyUI message-box frame and corner artwork, and
 square scrollbars. It uses bundled Barlow Condensed Regular at 24 px for a similar
 look to Skyrim's Futura CondensedLight menu font.
 
-The previous default is now **Modern**. To install it, copy the contents of `Presets/Modern`
-into your game's `Data` directory and overwrite `Easy2Read_Theme.ini`. Install
-`Presets/Untarnished UI` the same way. Reinstall the supplied `Data` theme file to
-restore the new default, then restart Skyrim to load the theme.
+The previous default is now the **Modern** preset.
 
 Customize the overlay appearance:
 
@@ -88,7 +100,7 @@ left-aligned titles and plain borders.
 ### Foreign Language Support
 
 - Supports English and some European languages by default.
-- To use with other languages, you must edit the Easy2Read_Theme.ini file and provide a custom font, and set the LanguageSupport value to reflect your desired language. Small memory impact if using "Full" - I recommend a more specialized preset if possible.
+- To use with other languages, you must edit your theme file (Easy2Read_Theme.ini, see Themes above) and provide a custom font, and set the LanguageSupport value to reflect your desired language. Small memory impact if using "Full" - I recommend a more specialized preset if possible.
 
 ## Building from Source
 
@@ -122,7 +134,8 @@ cmake --build build --config Release --target SettingsPersistence
 build/Release/SettingsPersistence.exe . build/settings-test-data
 ```
 
-It checks shipped INI/preset coverage, save/reload isolation, comment preservation,
+It checks shipped INI/preset coverage, preset listing and loading, the Default
+fallback when no user theme exists, save/reload isolation, comment preservation,
 save failures, binding conversions, and color picker coverage. In-game checks:
 open both Easy2Read pages, assign keyboard/controller bindings, change fonts and
 colors with a book open, save/reload each file, restart to check persistence, and
@@ -145,8 +158,7 @@ PowerShell script directly if your execution policy allows it.
 The script configures and builds Release in `build/release-package` using the
 requirements above. It reads the version from `CMakeLists.txt` and writes to `dist`:
 
-- `Easy2Read-<version>.zip`: DLL, configs, bundled fonts, image mappings, licenses, and documentation. Install directly with your mod manager, or extract into Skyrim's `Data` folder.
-- `Easy2Read-<version>-Theme-Modern.zip` and `Easy2Read-<version>-Theme-Untarnished-UI.zip`: optional theme overrides. Install one after the main package and let it overwrite the theme file.
+- `Easy2Read-<version>.zip`: DLL, configs, theme presets, bundled fonts, image mappings, licenses, and documentation. Install directly with your mod manager, or extract into Skyrim's `Data` folder.
 - `Easy2Read-<version>-Symbols.zip`: PDB for debugging, only with `-IncludeSymbols`.
 
 `-BuildDirectory` and `-OutputDirectory` accept paths relative to the repository

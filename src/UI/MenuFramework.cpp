@@ -80,6 +80,32 @@ bool EditFontFile(std::string &value) {
   return changed;
 }
 
+void EditThemePreset(Settings &settings, std::string &status) {
+  static std::vector<std::string> presets;
+  static bool scanned = false;
+  if (!scanned) {
+    presets = Settings::ListThemePresets();
+    scanned = true;
+  }
+  if (UI::BeginCombo("Theme preset", "Choose a preset to load")) {
+    if (presets.empty()) {
+      UI::TextWrapped("No presets found in SKSE/Plugins/Easy2Read/Themes.");
+    }
+    for (const auto &preset : presets) {
+      if (!UI::Selectable(preset.c_str(), false)) continue;
+      if (settings.LoadThemePreset(preset)) {
+        RequestOverlayResourceRefresh(true);
+        status = "Loaded the " + preset + " preset. Save INI to keep it as your theme.";
+      } else {
+        status = "Could not load the " + preset + " preset. Current theme kept; check Easy2Read.log.";
+      }
+    }
+    UI::EndCombo();
+  }
+  UI::SameLine();
+  if (UI::Button("Refresh theme list")) scanned = false;
+}
+
 bool Edit(const SettingField &field, Settings &settings) {
   return std::visit([&](auto member) -> bool {
     auto &value = settings.*member;
@@ -157,6 +183,10 @@ void Render(bool general) {
   auto &status = general ? generalStatus : themeStatus;
   UI::TextWrapped("%s", general ? "Easy2Read.ini" : "Easy2Read_Theme.ini");
   UI::TextWrapped("Changes apply while playing. Save writes this page to its INI; Reload discards unsaved changes on this page.");
+  if (!general) {
+    UI::TextWrapped("Presets come from SKSE/Plugins/Easy2Read/Themes and are never modified. Without Easy2Read_Theme.ini, the Default preset is used.");
+    EditThemePreset(settings, status);
+  }
   if (UI::Button("Save INI")) {
     const bool saved = general ? settings.SaveGeneral() : settings.SaveTheme();
     status = saved ? "Saved." : "Save failed. Check Easy2Read.log and file permissions.";

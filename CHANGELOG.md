@@ -15,11 +15,13 @@ All notable changes to Easy2Read will be documented in this file.
 - Optional SKSE Menu Framework 3 General and Theme pages for all INI settings, with native keyboard/controller binding pickers, grouped color pickers, font selectors, visibility controls, and sliders with units. Per-file save/reload retains comments and unknown keys; font and prompt changes refresh during play.
 - Book-screen ImGui Icons button art with "Show Text", always horizontally centered on the screen and positioned vertically beneath projected book/note geometry bounds, with a lower-center fallback and `ShowBookPrompt` setting. Supports configured keyboard and Xbox controller bindings and installed icon style patches; missing artwork falls back to a text badge. Hides while the reading overlay is open.
 - Location alias names and unavailable reference alias names resolve from the current quest instance's stored text data.
-- PowerShell release script builds versioned mod-manager-ready main and theme zip files, with optional debug symbols and test labels.
+- Theme presets: Default, Modern, and Untarnished UI ship as `.ini` files in `SKSE/Plugins/Easy2Read/Themes`, and any theme placed there is listed. The SKSE Menu Framework Theme page has a preset dropdown that applies the selected preset live; Save INI keeps it as your theme.
+- PowerShell release script builds one versioned mod-manager-ready zip file, with optional debug symbols and test labels.
 - Modern preset preserves the previous default theme.
 - Optional centered titles (`CenterTitle`) and Nordic-inspired border corners (`ShowCornerOrnaments`) in every theme configuration. Older theme files without these keys keep their original title alignment and plain border.
 
 ### Changed
+- `Easy2Read_Theme.ini` is your own theme and is no longer included in the download, so updates never overwrite it. Without it, the Default preset is used; saving creates it. The separate Modern and Untarnished UI theme downloads are replaced by the bundled presets.
 - Reference aliases use custom display names before falling back to base-object names. Alias tag keywords accept any letter case, and book ownership lookup only reads forced-reference fill data for forced aliases.
 - Default theme now follows SkyUI/Vanilla styling: translucent black, white titles, thin gray borders, square corners, and narrow square scrollbars. Uses bundled Barlow Condensed Regular at 24 px, with its SIL Open Font License included. Sovngarde remains available and is retained by the Modern preset.
 - Reading overlay now draws after BookMenu into Skyrim's live UI framebuffer, before Community Shaders HDR/frame-generation composition. Removed swap-chain device-failure detection and cached output targets; restores graphics state after drawing.

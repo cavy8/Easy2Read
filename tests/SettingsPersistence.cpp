@@ -54,13 +54,19 @@ int main(int argc, char **argv) {
     std::filesystem::current_path(working);
     const auto general = std::filesystem::path("Data/SKSE/Plugins/Easy2Read.ini");
     const auto theme = std::filesystem::path("Data/SKSE/Plugins/Easy2Read_Theme.ini");
-    CheckCoverage(repo / "Data/SKSE/Plugins/Easy2Read.ini", true);
-    CheckCoverage(repo / "Data/SKSE/Plugins/Easy2Read_Theme.ini", false);
-    for (const auto &preset : std::filesystem::directory_iterator(repo / "Presets")) {
-      CheckCoverage(preset.path() / "SKSE/Plugins/Easy2Read_Theme.ini", false);
+    const auto themes = std::filesystem::path("Data/SKSE/Plugins/Easy2Read/Themes");
+    Check(!std::filesystem::exists(repo / theme), "User theme INI must not ship; it would overwrite user edits");
+    CheckCoverage(repo / general, true);
+    std::size_t presetCount = 0;
+    for (const auto &preset : std::filesystem::directory_iterator(repo / themes)) {
+      CheckCoverage(preset.path(), false);
+      ++presetCount;
     }
+    std::filesystem::remove_all(themes);
+    std::filesystem::create_directories(themes.parent_path());
+    std::filesystem::copy(repo / themes, themes, std::filesystem::copy_options::recursive);
     std::filesystem::copy_file(repo / general, general, std::filesystem::copy_options::overwrite_existing);
-    std::filesystem::copy_file(repo / theme, theme, std::filesystem::copy_options::overwrite_existing);
+    std::filesystem::copy_file(themes / "Default.ini", theme, std::filesystem::copy_options::overwrite_existing);
     { std::ofstream out(general, std::ios::app); out << "\n; Keep this comment\n[UserExtension]\nCustom = keep-me\n"; }
     { std::ofstream out(theme, std::ios::app); out << "\n; Keep theme comment\n[UserExtension]\nCustom = keep-theme\n"; }
     auto &settings = *Easy2Read::Settings::GetSingleton();
@@ -117,6 +123,26 @@ int main(int argc, char **argv) {
     Check(!settings.LoadGeneral() && settings.toggleKey == 77, "Missing INI changed runtime settings");
     Check(settings.SaveGeneral(), "Cannot create missing INI");
     Check(settings.LoadGeneral() && settings.toggleKey == 77, "Created INI failed round-trip");
+    const auto presets = Easy2Read::Settings::ListThemePresets();
+    Check(presets.size() == presetCount && presets.front() == "Default" &&
+          std::ranges::find(presets, "Untarnished UI") != presets.end(),
+          "Theme preset list incomplete or Default not first");
+    const auto defaultPreset = Read(themes / "Default.ini");
+    const auto userTheme = Read(theme);
+    Check(settings.LoadThemePreset("Modern") && settings.fontPreset == Easy2Read::FontPreset::Sovngarde &&
+          settings.toggleKey == 77, "Modern preset failed to load or changed general settings");
+    Check(Read(theme) == userTheme, "Loading a preset changed the user theme INI");
+    Check(!settings.LoadThemePreset("Missing") && settings.fontPreset == Easy2Read::FontPreset::Sovngarde,
+          "Missing preset changed the current theme");
+    std::filesystem::remove(theme);
+    Check(settings.LoadTheme() && settings.fontPreset == Easy2Read::FontPreset::Barlow,
+          "Missing user theme did not fall back to the Default preset");
+    settings.fontSize = 33;
+    Check(settings.SaveTheme(), "Cannot create user theme INI");
+    Check(Read(themes / "Default.ini") == defaultPreset, "Saving modified the Default preset");
+    Check(Read(theme).find("; Font preset:") != std::string::npos &&
+          Read(theme).find("FontSize = 33") != std::string::npos,
+          "New user theme lacks Default preset comments or saved values");
     { std::ofstream out(theme); out << "[Font]\nFontPreset = Sovngarde\n"; }
     Check(settings.LoadTheme() && !settings.centerTitle && !settings.showCornerOrnaments,
           "Legacy theme compatibility changed");
@@ -144,7 +170,7 @@ int main(int argc, char **argv) {
         Check(matches == 1, "RGB setting not covered by exactly one color picker");
       }
     }
-    std::cout << "PASS: 53-setting/all-preset coverage, persistence, isolation, comments, failures, legacy themes, keyboard/controller binding conversions, all 8 color pickers\n";
+    std::cout << "PASS: 53-setting/all-preset coverage, preset listing/loading/Default fallback, persistence, isolation, comments, failures, legacy themes, keyboard/controller binding conversions, all 8 color pickers\n";
     return 0;
   } catch (const std::exception &error) {
     std::cerr << "FAIL: " << error.what() << '\n';

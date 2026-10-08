@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-Builds Easy2Read and creates mod-manager-ready release and theme archives.
+Builds Easy2Read and creates a mod-manager-ready release archive.
 .EXAMPLE
 .\build-release.ps1
 .EXAMPLE
@@ -60,15 +60,13 @@ if (-not $env:VCPKG_ROOT -or
 
 $buildPath = Resolve-RepoPath $BuildDirectory
 $outputPath = Resolve-RepoPath $OutputDirectory
-# Keep generated files out of the trees that are copied into the archives.
-foreach ($assetFolder in @('Data', 'Presets')) {
-    $assetPath = Resolve-RepoPath $assetFolder
-    $assetPrefix = $assetPath + [IO.Path]::DirectorySeparatorChar
-    foreach ($generatedPath in @($buildPath, $outputPath)) {
-        if ($generatedPath.Equals($assetPath, [StringComparison]::OrdinalIgnoreCase) -or
-            $generatedPath.StartsWith($assetPrefix, [StringComparison]::OrdinalIgnoreCase)) {
-            throw "Build and output directories must be outside $assetFolder."
-        }
+# Keep generated files out of the tree that is copied into the archive.
+$assetPath = Resolve-RepoPath 'Data'
+$assetPrefix = $assetPath + [IO.Path]::DirectorySeparatorChar
+foreach ($generatedPath in @($buildPath, $outputPath)) {
+    if ($generatedPath.Equals($assetPath, [StringComparison]::OrdinalIgnoreCase) -or
+        $generatedPath.StartsWith($assetPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Build and output directories must be outside Data.'
     }
 }
 $versionMatch = [regex]::Match(
@@ -115,10 +113,6 @@ try {
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     Write-Archive $mainPath $archiveName
-    foreach ($preset in Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'Presets') -Directory) {
-        $presetName = $preset.Name -replace '[^A-Za-z0-9._-]', '-'
-        Write-Archive $preset.FullName "$archiveName-Theme-$presetName"
-    }
     if ($IncludeSymbols) {
         $symbolsPath = Join-Path $stagePath 'symbols'
         New-Item -ItemType Directory -Path $symbolsPath | Out-Null

@@ -39,7 +39,8 @@ ToggleKey = 33  ; Hotkey scancode (default F = 33)
 
 The default theme follows SkyUI/Vanilla menus: translucent black, white text,
 centered titles, the original SkyUI message-box frame and corner artwork, and
-square scrollbars.
+square scrollbars. It uses bundled Barlow Condensed Regular at 24 px for a similar
+look to Skyrim's Futura CondensedLight menu font.
 
 The previous default is now **Modern**. To install it, copy the contents of `Presets/Modern`
 into your game's `Data` directory and overwrite `Easy2Read_Theme.ini`. Install
@@ -48,7 +49,7 @@ restore the new default, then restart Skyrim to load the theme.
 
 Customize the overlay appearance:
 
-- **[Font]**: FontPreset (Sovngarde/Dyslexic/ImGui/Custom), FontSize, TitleScale
+- **[Font]**: FontPreset (Barlow/Sovngarde/Dyslexic/ImGui/Custom), FontSize, TitleScale
 - **[Colors]**: Title, body text, window, border, separator colors (RGB 0-255)
 - **[Scrollbar]**: Background, thumb, hover colors, size, rounding, scroll speed
 - **[Window]**: Size (% of screen), rounding, padding
@@ -132,7 +133,7 @@ into your game. Re-running replaces archives with the same version and suffix.
 
 ## License
 
-This project is licensed under GPL-3.0. Sovngarde and OpenDyslexic font files are licensed under the SIL Open Font License. Futura font file is from dafontfamily.com, license not specified.
+This project is licensed under GPL-3.0. Barlow Condensed Light, Sovngarde, and OpenDyslexic font files are licensed under the SIL Open Font License; their notices are included in `Data/SKSE/Plugins/Easy2Read/Licenses`. Futura font file is from dafontfamily.com, license not specified.
 
 I can't stop you from doing anything you want with this. That said, I'd still appreciate it if you reached out to me first :)
 
@@ -143,6 +144,7 @@ I can't stop you from doing anything you want with this. That said, I'd still ap
 - SSE-ImGui project for D3D11 hooking reference
 - OpenDyslexic font
 - mjorka for Sovngarde font
+- Jeremy Tribby and the Barlow Project Authors for Barlow Condensed Regular
 - Community Shaders team (input reference)
 - SkyUI team for the message-box frame artwork, extracted from [SkyUI Community](https://github.com/doodlum/SkyUI-Community). See [extraction details](assets/SkyUI/README.md).
 - Paul Renner for Futura font

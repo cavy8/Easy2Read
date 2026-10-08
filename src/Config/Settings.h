@@ -6,7 +6,8 @@
 namespace Easy2Read {
 
 enum class FontPreset {
-  Sovngarde,    // Sovngarde font - Skyrim-themed (default)
+  Barlow,       // Barlow Condensed Regular - vanilla menu-inspired (default)
+  Sovngarde,    // Sovngarde font - Skyrim-themed
   Dyslexic,     // OpenDyslexic - accessibility font
   ImGuiDefault, // Built-in ImGui font
   Custom        // User-specified font file
@@ -43,7 +44,7 @@ public:
   float controllerScrollSpeed = 3.0f; // Scroll speed for controller thumbstick
 
   // ---- Font ----
-  FontPreset fontPreset = FontPreset::Sovngarde;
+  FontPreset fontPreset = FontPreset::Barlow;
   std::string customFontFile;
   float fontSize = 24.0f;      // Body text size
   float titleFontSize = 28.0f; // Title text size (0 = same as body)

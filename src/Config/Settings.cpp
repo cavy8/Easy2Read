@@ -53,7 +53,7 @@ void Settings::LoadTheme() {
   SKSE::log::info("Loading theme from Easy2Read_Theme.ini");
 
   // [Font]
-  const char *fontPresetStr = ini.GetValue("Font", "FontPreset", "Sovngarde");
+  const char *fontPresetStr = ini.GetValue("Font", "FontPreset", "Barlow");
   fontPreset = ParseFontPreset(fontPresetStr);
   customFontFile = ini.GetValue("Font", "CustomFontFile",
                                 "SKSE/Plugins/Easy2Read/CustomFont.ttf");
@@ -190,6 +190,8 @@ void Settings::LoadTheme() {
 
 std::string Settings::GetFontPath() const {
   switch (fontPreset) {
+  case FontPreset::Barlow:
+    return "Data/SKSE/Plugins/Easy2Read/BarlowCondensed-Regular.ttf";
   case FontPreset::Sovngarde:
     return "Data/SKSE/Plugins/Easy2Read/Sovngarde-Bold.ttf";
   case FontPreset::Dyslexic:
@@ -203,7 +205,9 @@ std::string Settings::GetFontPath() const {
 }
 
 FontPreset Settings::ParseFontPreset(const std::string &str) {
-  if (str == "sovngarde" || str == "Sovngarde" || str == "SOVNGARDE") {
+  if (str == "barlow" || str == "Barlow" || str == "BARLOW") {
+    return FontPreset::Barlow;
+  } else if (str == "sovngarde" || str == "Sovngarde" || str == "SOVNGARDE") {
     return FontPreset::Sovngarde;
   } else if (str == "dyslexic" || str == "Dyslexic" || str == "DYSLEXIC") {
     return FontPreset::Dyslexic;
@@ -213,7 +217,7 @@ FontPreset Settings::ParseFontPreset(const std::string &str) {
              str == "default" || str == "Default" || str == "DEFAULT") {
     return FontPreset::ImGuiDefault;
   }
-  return FontPreset::Sovngarde; // Default to Sovngarde
+  return FontPreset::Barlow; // Default to Barlow Condensed Regular
 }
 
 LanguageSupport Settings::ParseLanguageSupport(const std::string &str) {

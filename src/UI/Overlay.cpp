@@ -5,7 +5,6 @@
 #include "OverlayControl.h"
 #include "Hooks/MenuWatcher.h"
 #include "PCH.h"
-#include <cmath>
 #include <limits>
 #include <imgui.h>
 
@@ -15,51 +14,6 @@ void RequestOverlayResourceRefresh(bool fonts) {
 }
 void HideReadingOverlay() { Overlay::GetSingleton()->Hide(); }
 namespace {
-struct BookScreenBounds {
-  float bottom = std::numeric_limits<float>::lowest();
-  bool valid = false;
-};
-
-void IncludeModelBounds(RE::NiAVObject *object, RE::NiCamera *camera,
-                        const ImVec2 &displaySize, BookScreenBounds &bounds) {
-  if (!object || object->GetAppCulled()) {
-    return;
-  }
-  if (auto node = object->AsNode()) {
-    for (const auto &child : node->GetChildren()) {
-      IncludeModelBounds(child.get(), camera, displaySize, bounds);
-    }
-    return;
-  }
-  if (!object->AsGeometry()) {
-    return;
-  }
-
-  // Project a conservative box around each geometry's world bound. Using
-  // child bounds avoids the oversized sphere around an entire open book.
-  const auto &bound = object->worldBound;
-  if (!std::isfinite(bound.radius) || bound.radius <= 0.0f) {
-    return;
-  }
-  BookScreenBounds geometryBounds;
-  for (int corner = 0; corner < 8; ++corner) {
-    RE::NiPoint3 point = bound.center + RE::NiPoint3(
-        (corner & 1) ? bound.radius : -bound.radius,
-        (corner & 2) ? bound.radius : -bound.radius,
-        (corner & 4) ? bound.radius : -bound.radius);
-    float x, y, z;
-    if (!camera->WorldPtToScreenPt3(point, x, y, z, 1e-5f) ||
-        !std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z)) {
-      return;
-    }
-    // NiCamera screen coordinates start at the bottom left.
-    y = (1.0f - y) * displaySize.y;
-    geometryBounds.bottom = (std::max)(geometryBounds.bottom, y);
-  }
-  bounds.bottom = (std::max)(bounds.bottom, geometryBounds.bottom);
-  bounds.valid = true;
-}
-
 std::string GetPromptButton(bool gamepad, const Settings &settings) {
   if (gamepad) {
     switch (settings.controllerToggleButton) {
@@ -279,7 +233,7 @@ void Overlay::RenderBookPrompt() {
     return;
   }
   const float scale = displaySize.y / 1080.0f;
-  const float fontSize = 24.0f * scale;
+  const float fontSize = 28.0f * scale;
   auto font = customFont ? customFont : ImGui::GetFont();
   auto input = RE::BSInputDeviceManager::GetSingleton();
   const bool gamepad = input && input->IsGamepadEnabled();
@@ -300,21 +254,9 @@ void Overlay::RenderBookPrompt() {
   const float gap = 10.0f * scale;
   const float width = badgeWidth + gap + labelSize.x;
 
-  ImVec2 position(displaySize.x * 0.5f, displaySize.y * 0.88f);
-  auto scene = RE::UI3DSceneManager::GetSingleton();
-  if (scene && scene->camera) {
-    BookScreenBounds bounds;
-    IncludeModelBounds(menu->GetRuntimeData().bookModel.get(),
-                       scene->camera.get(), displaySize, bounds);
-    if (bounds.valid) {
-      position.y = bounds.bottom + 12.0f * scale;
-    }
-  }
   // Reserve the bottom strip for the game's Take/Exit/page controls.
-  const float margin = 16.0f * scale;
-  position.y = std::clamp(position.y, margin,
-                          (std::max)(margin, displaySize.y * 0.90f - badgeHeight));
-  position.x -= width * 0.5f;
+  const ImVec2 position((displaySize.x - width) * 0.5f,
+                        displaySize.y * 0.90f - badgeHeight);
 
   auto draw = ImGui::GetForegroundDrawList();
   const ImVec2 badgeEnd(position.x + badgeWidth, position.y + badgeHeight);

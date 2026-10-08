@@ -25,17 +25,15 @@ Address Library.
 
 ### Book Overlay
 1. Open any book or note in Skyrim
-   A centered button icon followed by **Show Text** appears below the model,
+   A centered button icon followed by **Show Text** appears near the bottom of the screen,
    matching the configured keyboard key or Xbox controller button.
 2. Press the toggle key (default: **F**) to display the overlay
 3. Scroll with your mouse wheel to read long texts
 4. Press the toggle key again or close the book to hide the overlay
 
-The prompt hides while the text overlay is open. It always stays horizontally centered
-on the screen; its height follows the model's projected bottom edge and stays above
-the bottom control strip. If bounds are unavailable,
-it falls back to the lower center of the screen. Very large models may overlap it
-when there is no room underneath. Set `ShowBookPrompt = false` to hide the prompt.
+The prompt hides while the text overlay is open. It stays at the bottom center of
+the screen, above the game's control strip, as the book opens. Its text is 28 px
+at 1080p and scales with screen height. Set `ShowBookPrompt = false` to hide the prompt.
 
 ## Configuration
 
